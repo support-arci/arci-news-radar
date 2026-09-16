@@ -65,9 +65,13 @@ print(f"Last 24h: {len(recent_articles)}")
 # 3️⃣ Google Sheets
 # ----------------------
 
-gc = gspread.service_account(
-    filename="arci-385722-14f5bfce570c.json"
+import json
+
+credentials = json.loads(
+    os.environ["GOOGLE_SERVICE_ACCOUNT"]
 )
+
+gc = gspread.service_account_from_dict(credentials)
 
 sheet = gc.open_by_key(
     "1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI"

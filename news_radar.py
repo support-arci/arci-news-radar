@@ -1,12 +1,16 @@
 import os
 import requests
+import gspread
 from datetime import datetime, timezone, timedelta
+
+# ----------------------
+# 1️⃣ Finnhub
+# ----------------------
 
 FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
 
 FINNHUB_URL = "https://finnhub.io/api/v1/news"
 
-# Last 24 hours
 now = datetime.now(timezone.utc)
 cutoff = now - timedelta(hours=24)
 
@@ -25,7 +29,10 @@ response.raise_for_status()
 
 articles = response.json()
 
-# Keep only last 24 hours
+# ----------------------
+# 2️⃣ Filter last 24h
+# ----------------------
+
 recent_articles = []
 
 for article in articles:
@@ -36,28 +43,47 @@ for article in articles:
     )
 
     if published >= cutoff:
-        recent_articles.append({
-            "article_id": str(article.get("id")),
-            "headline": article.get("headline"),
-            "source": article.get("source"),
-            "url": article.get("url"),
-            "published_at": published.isoformat()
-        })
 
-# Sort newest first
+        recent_articles.append([
+            str(article.get("id")),
+            article.get("headline"),
+            article.get("source"),
+            article.get("url"),
+            published.isoformat()
+        ])
+
+# Newest first
 recent_articles.sort(
-    key=lambda x: x["published_at"],
+    key=lambda x: x[4],
     reverse=True
 )
 
 print(f"Finnhub returned: {len(articles)}")
-print(f"Articles from last 24h: {len(recent_articles)}")
+print(f"Last 24h: {len(recent_articles)}")
 
-for article in recent_articles[:10]:
-    print(
-        article["published_at"],
-        "|",
-        article["source"],
-        "|",
-        article["headline"]
+# ----------------------
+# 3️⃣ Google Sheets
+# ----------------------
+
+gc = gspread.service_account(
+    filename="arci-385722-14f5bfce570c.json"
+)
+
+sheet = gc.open_by_key(
+    "1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI"
+)
+
+worksheet = sheet.worksheet("AI Test")
+
+# ----------------------
+# 4️⃣ Upload
+# ----------------------
+
+if recent_articles:
+
+    worksheet.append_rows(
+        recent_articles,
+        value_input_option="RAW"
     )
+
+print(f"Uploaded: {len(recent_articles)}")

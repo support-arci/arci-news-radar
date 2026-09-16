@@ -1,21 +1,15 @@
 import os
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 FINNHUB_URL = "https://finnhub.io/api/v1/news"
-SUPABASE_TABLE = f"{SUPABASE_URL}/rest/v1/news_articles"
 
-headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json"
-}
+# Last 24 hours
+now = datetime.now(timezone.utc)
+cutoff = now - timedelta(hours=24)
 
-# Get latest general news
 params = {
     "category": "general",
     "token": FINNHUB_API_KEY
@@ -31,55 +25,39 @@ response.raise_for_status()
 
 articles = response.json()
 
-# Get article IDs already stored in Supabase
-existing_response = requests.get(
-    SUPABASE_TABLE,
-    headers=headers,
-    params={
-        "select": "article_id",
-        "limit": 1000
-    },
-    timeout=30
-)
-
-existing_response.raise_for_status()
-
-existing_ids = {
-    row["article_id"]
-    for row in existing_response.json()
-}
-
-new_articles = []
+# Keep only last 24 hours
+recent_articles = []
 
 for article in articles:
 
-    article_id = str(article.get("id"))
-
-    if article_id in existing_ids:
-        continue
-
-    new_articles.append({
-        "article_id": article_id,
-        "headline": article.get("headline"),
-        "source": article.get("source"),
-        "url": article.get("url"),
-        "published_at": datetime.fromtimestamp(
-            article.get("datetime", 0),
-            tz=timezone.utc
-        ).isoformat()
-    })
-
-# Insert all new articles in one request
-if new_articles:
-
-    insert = requests.post(
-        SUPABASE_TABLE,
-        headers=headers,
-        json=new_articles,
-        timeout=30
+    published = datetime.fromtimestamp(
+        article.get("datetime", 0),
+        tz=timezone.utc
     )
 
-    insert.raise_for_status()
+    if published >= cutoff:
+        recent_articles.append({
+            "article_id": str(article.get("id")),
+            "headline": article.get("headline"),
+            "source": article.get("source"),
+            "url": article.get("url"),
+            "published_at": published.isoformat()
+        })
 
-print(f"Checked {len(articles)} articles")
-print(f"New articles stored: {len(new_articles)}")
+# Sort newest first
+recent_articles.sort(
+    key=lambda x: x["published_at"],
+    reverse=True
+)
+
+print(f"Finnhub returned: {len(articles)}")
+print(f"Articles from last 24h: {len(recent_articles)}")
+
+for article in recent_articles[:10]:
+    print(
+        article["published_at"],
+        "|",
+        article["source"],
+        "|",
+        article["headline"]
+    )

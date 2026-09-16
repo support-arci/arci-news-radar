@@ -15,37 +15,50 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# Get latest general news
 params = {
     "category": "general",
     "token": FINNHUB_API_KEY
 }
 
-response = requests.get(FINNHUB_URL, params=params, timeout=30)
+response = requests.get(
+    FINNHUB_URL,
+    params=params,
+    timeout=30
+)
+
 response.raise_for_status()
 
 articles = response.json()
 
-new_articles = 0
+# Get article IDs already stored in Supabase
+existing_response = requests.get(
+    SUPABASE_TABLE,
+    headers=headers,
+    params={
+        "select": "article_id",
+        "limit": 1000
+    },
+    timeout=30
+)
+
+existing_response.raise_for_status()
+
+existing_ids = {
+    row["article_id"]
+    for row in existing_response.json()
+}
+
+new_articles = []
 
 for article in articles:
 
     article_id = str(article.get("id"))
 
-    # Check if already stored
-    check = requests.get(
-        SUPABASE_TABLE,
-        headers=headers,
-        params={
-            "article_id": f"eq.{article_id}",
-            "select": "article_id"
-        },
-        timeout=30
-    )
-
-    if check.json():
+    if article_id in existing_ids:
         continue
 
-    data = {
+    new_articles.append({
         "article_id": article_id,
         "headline": article.get("headline"),
         "source": article.get("source"),
@@ -54,18 +67,19 @@ for article in articles:
             article.get("datetime", 0),
             tz=timezone.utc
         ).isoformat()
-    }
+    })
+
+# Insert all new articles in one request
+if new_articles:
 
     insert = requests.post(
         SUPABASE_TABLE,
         headers=headers,
-        json=data,
+        json=new_articles,
         timeout=30
     )
 
     insert.raise_for_status()
 
-    new_articles += 1
-
 print(f"Checked {len(articles)} articles")
-print(f"New articles stored: {new_articles}")
+print(f"New articles stored: {len(new_articles)}")

@@ -1,71 +1,68 @@
 import os
-import requests
+import json
 import gspread
+import feedparser
+
 from datetime import datetime, timezone, timedelta
 
 # ----------------------
-# 1️⃣ Finnhub
+# 1️⃣ Higher-ed RSS feeds
 # ----------------------
 
-FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
-
-FINNHUB_URL = "https://finnhub.io/api/v1/news"
-
-now = datetime.now(timezone.utc)
-cutoff = now - timedelta(hours=24)
-
-params = {
-    "category": "general",
-    "token": FINNHUB_API_KEY
+RSS_FEEDS = {
+    "Inside Higher Ed": "https://www.insidehighered.com/rss.xml",
+    "Higher Ed Dive": "https://www.highereddive.com/feeds/news/",
+    "The PIE News": "https://thepienews.com/feed/",
 }
 
-response = requests.get(
-    FINNHUB_URL,
-    params=params,
-    timeout=30
-)
-
-response.raise_for_status()
-
-articles = response.json()
-
 # ----------------------
-# 2️⃣ Filter last 24h
+# 2️⃣ Get last 24 hours
 # ----------------------
+
+cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
 recent_articles = []
 
-for article in articles:
+for source, feed_url in RSS_FEEDS.items():
 
-    published = datetime.fromtimestamp(
-        article.get("datetime", 0),
-        tz=timezone.utc
-    )
+    feed = feedparser.parse(feed_url)
 
-    if published >= cutoff:
+    print(f"{source}: {len(feed.entries)} entries")
+
+    for article in feed.entries:
+
+        if not hasattr(article, "published_parsed"):
+            continue
+
+        published = datetime(
+            *article.published_parsed[:6],
+            tzinfo=timezone.utc
+        )
+
+        if published < cutoff:
+            continue
 
         recent_articles.append([
-            str(article.get("id")),
-            article.get("headline"),
-            article.get("source"),
-            article.get("url"),
-            published.isoformat()
+            published.isoformat(),
+            source,
+            article.get("title", ""),
+            article.get("link", "")
         ])
 
-# Newest first
+# ----------------------
+# 3️⃣ Newest first
+# ----------------------
+
 recent_articles.sort(
-    key=lambda x: x[4],
+    key=lambda x: x[0],
     reverse=True
 )
 
-print(f"Finnhub returned: {len(articles)}")
-print(f"Last 24h: {len(recent_articles)}")
+print(f"Articles from last 24h: {len(recent_articles)}")
 
 # ----------------------
-# 3️⃣ Google Sheets
+# 4️⃣ Google Sheets
 # ----------------------
-
-import json
 
 credentials = json.loads(
     os.environ["GOOGLE_SERVICE_ACCOUNT"]
@@ -80,7 +77,7 @@ sheet = gc.open_by_key(
 worksheet = sheet.worksheet("AI Test")
 
 # ----------------------
-# 4️⃣ Upload
+# 5️⃣ Upload
 # ----------------------
 
 if recent_articles:

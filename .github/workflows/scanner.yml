@@ -20,8 +20,8 @@ jobs:
 
       - name: Install dependencies
         # run: pip install requests gspread
-        run: pip install gspread feedparser
-
+        # run: pip install gspread feedparser
+          run: pip install gspread feedparser beautifulsoup4
       - name: Run scanner
         env:
           # FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}

@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 import gspread
 import feedparser
 
@@ -18,25 +19,64 @@ extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
 
-def clean_description(raw_html):
-    """Convert RSS HTML description into clean readable text."""
+def get_article_description(url):
 
-    soup = BeautifulSoup(raw_html or "", "html.parser")
+    try:
+        response = requests.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            },
+            timeout=15
+        )
 
-    # Remove images
-    for tag in soup.find_all(["img", "picture", "figure"]):
-        tag.decompose()
+        response.raise_for_status()
 
-    # Remove links
-    for tag in soup.find_all("a"):
-        tag.replace_with(tag.get_text(" ", strip=True))
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
 
-    text = soup.get_text(" ", strip=True)
+        article = soup.find("article")
 
-    # Clean excessive whitespace
-    text = " ".join(text.split())
+        if not article:
+            article = soup.find(
+                class_=lambda x: x and "article" in str(x).lower()
+            )
 
-    return text
+        if not article:
+            return ""
+
+        # Remove unwanted elements
+        for tag in article.find_all([
+            "script",
+            "style",
+            "nav",
+            "figure",
+            "img",
+            "aside"
+        ]):
+            tag.decompose()
+
+        paragraphs = []
+
+        for p in article.find_all("p"):
+
+            text = p.get_text(" ", strip=True)
+
+            if len(text) > 40:
+                paragraphs.append(text)
+
+        # First 5 useful paragraphs
+        description = " ".join(paragraphs[:5])
+
+        return description
+
+    except Exception as e:
+
+        print(f"Could not extract {url}: {e}")
+
+        return ""
 
 
 for source, feed_url in RSS_FEEDS.items():
@@ -65,8 +105,8 @@ for source, feed_url in RSS_FEEDS.items():
         if published < cutoff:
             continue
 
-        description = clean_description(
-            article.get("description", "")
+        description = get_article_description(
+            article.get("link", "")
         )
 
         recent_articles.append([

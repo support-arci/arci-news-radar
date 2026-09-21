@@ -19,7 +19,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install gspread feedparser beautifulsoup4
+        run: pip install gspread feedparser beautifulsoup4 requests
           
       - name: Run scanner
         env:

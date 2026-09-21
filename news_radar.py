@@ -69,9 +69,9 @@ sheet = gc.open_by_key(
 worksheet = sheet.worksheet("AI Test")
 
 if recent_articles:
-    worksheet.append_rows(
-        recent_articles,
-        value_input_option="RAW"
+    worksheet.update(
+        range_name=f"A1:F{len(recent_articles)}",
+        values=recent_articles
     )
 
 print(f"Uploaded: {len(recent_articles)}")

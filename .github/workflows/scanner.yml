@@ -20,6 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: pip install requests gspread
+        run: pip install gspread feedparser
 
       - name: Run scanner
         env:

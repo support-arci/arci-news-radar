@@ -5,21 +5,14 @@ import feedparser
 
 from datetime import datetime, timezone, timedelta
 
-# ----------------------
-# 1️⃣ Higher-ed RSS feeds
-# ----------------------
-
 RSS_FEEDS = {
     "Inside Higher Ed": "https://www.insidehighered.com/rss.xml",
     "Higher Ed Dive": "https://www.highereddive.com/feeds/news/",
     "The PIE News": "https://thepienews.com/feed/",
 }
 
-# ----------------------
-# 2️⃣ Get last 24 hours
-# ----------------------
-
 cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+extracted_at = datetime.now(timezone.utc).isoformat()
 
 recent_articles = []
 
@@ -31,27 +24,30 @@ for source, feed_url in RSS_FEEDS.items():
 
     for article in feed.entries:
 
-        if not hasattr(article, "published_parsed"):
+        if hasattr(article, "published_parsed"):
+            published = datetime(
+                *article.published_parsed[:6],
+                tzinfo=timezone.utc
+            )
+        elif hasattr(article, "updated_parsed"):
+            published = datetime(
+                *article.updated_parsed[:6],
+                tzinfo=timezone.utc
+            )
+        else:
             continue
-
-        published = datetime(
-            *article.published_parsed[:6],
-            tzinfo=timezone.utc
-        )
 
         if published < cutoff:
             continue
 
         recent_articles.append([
             published.isoformat(),
-            source,
             article.get("title", ""),
-            article.get("link", "")
+            article.get("description", ""),
+            source,
+            article.get("link", ""),
+            extracted_at
         ])
-
-# ----------------------
-# 3️⃣ Newest first
-# ----------------------
 
 recent_articles.sort(
     key=lambda x: x[0],
@@ -59,10 +55,6 @@ recent_articles.sort(
 )
 
 print(f"Articles from last 24h: {len(recent_articles)}")
-
-# ----------------------
-# 4️⃣ Google Sheets
-# ----------------------
 
 credentials = json.loads(
     os.environ["GOOGLE_SERVICE_ACCOUNT"]
@@ -76,12 +68,7 @@ sheet = gc.open_by_key(
 
 worksheet = sheet.worksheet("AI Test")
 
-# ----------------------
-# 5️⃣ Upload
-# ----------------------
-
 if recent_articles:
-
     worksheet.append_rows(
         recent_articles,
         value_input_option="RAW"

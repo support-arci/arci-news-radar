@@ -3,6 +3,7 @@ import json
 import gspread
 import feedparser
 
+from bs4 import BeautifulSoup
 from datetime import datetime, timezone, timedelta
 
 RSS_FEEDS = {
@@ -15,6 +16,28 @@ cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 extracted_at = datetime.now(timezone.utc).isoformat()
 
 recent_articles = []
+
+
+def clean_description(raw_html):
+    """Convert RSS HTML description into clean readable text."""
+
+    soup = BeautifulSoup(raw_html or "", "html.parser")
+
+    # Remove images
+    for tag in soup.find_all(["img", "picture", "figure"]):
+        tag.decompose()
+
+    # Remove links
+    for tag in soup.find_all("a"):
+        tag.replace_with(tag.get_text(" ", strip=True))
+
+    text = soup.get_text(" ", strip=True)
+
+    # Clean excessive whitespace
+    text = " ".join(text.split())
+
+    return text
+
 
 for source, feed_url in RSS_FEEDS.items():
 
@@ -29,25 +52,32 @@ for source, feed_url in RSS_FEEDS.items():
                 *article.published_parsed[:6],
                 tzinfo=timezone.utc
             )
+
         elif hasattr(article, "updated_parsed"):
             published = datetime(
                 *article.updated_parsed[:6],
                 tzinfo=timezone.utc
             )
+
         else:
             continue
 
         if published < cutoff:
             continue
 
+        description = clean_description(
+            article.get("description", "")
+        )
+
         recent_articles.append([
             published.isoformat(),
             article.get("title", ""),
-            article.get("description", ""),
+            description,
             source,
             article.get("link", ""),
             extracted_at
         ])
+
 
 recent_articles.sort(
     key=lambda x: x[0],
@@ -55,6 +85,7 @@ recent_articles.sort(
 )
 
 print(f"Articles from last 24h: {len(recent_articles)}")
+
 
 credentials = json.loads(
     os.environ["GOOGLE_SERVICE_ACCOUNT"]
@@ -68,7 +99,9 @@ sheet = gc.open_by_key(
 
 worksheet = sheet.worksheet("AI Test")
 
+
 if recent_articles:
+
     worksheet.update(
         range_name=f"A1:F{len(recent_articles)}",
         values=recent_articles

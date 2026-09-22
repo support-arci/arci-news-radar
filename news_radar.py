@@ -161,9 +161,10 @@ worksheet = sheet.worksheet("AI Test")
 
 
 if recent_articles:
-
+    # Starts at row 2 (A2) to leave the header row untouched
+    end_row = len(recent_articles) + 1
     worksheet.update(
-        range_name=f"A1:G{len(recent_articles)}",
+        range_name=f"A2:G{end_row}",
         values=recent_articles
     )
 

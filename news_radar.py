@@ -19,8 +19,7 @@ extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
 
-def get_article_description(url):
-
+def get_article_details(url):
     try:
         response = requests.get(
             url,
@@ -37,6 +36,23 @@ def get_article_description(url):
             "html.parser"
         )
 
+        # 1. Extract image URL (Check Open Graph & Twitter meta tags first)
+        image_url = ""
+        og_image = (
+            soup.find("meta", property="og:image") 
+            or soup.find("meta", attrs={"name": "og:image"})
+        )
+        if og_image and og_image.get("content"):
+            image_url = og_image["content"]
+        else:
+            twitter_image = (
+                soup.find("meta", property="twitter:image") 
+                or soup.find("meta", attrs={"name": "twitter:image"})
+            )
+            if twitter_image and twitter_image.get("content"):
+                image_url = twitter_image["content"]
+
+        # 2. Find main article container
         article = soup.find("article")
 
         if not article:
@@ -45,9 +61,15 @@ def get_article_description(url):
             )
 
         if not article:
-            return ""
+            return "", image_url
 
-        # Remove unwanted elements
+        # Fallback image extraction from the article body if meta tags weren't present
+        if not image_url:
+            first_img = article.find("img")
+            if first_img and first_img.get("src"):
+                image_url = first_img["src"]
+
+        # Remove unwanted elements for paragraph extraction
         for tag in article.find_all([
             "script",
             "style",
@@ -61,7 +83,6 @@ def get_article_description(url):
         paragraphs = []
 
         for p in article.find_all("p"):
-
             text = p.get_text(" ", strip=True)
 
             if len(text) > 40:
@@ -70,13 +91,11 @@ def get_article_description(url):
         # First 5 useful paragraphs
         description = " ".join(paragraphs[:5])
 
-        return description
+        return description, image_url
 
     except Exception as e:
-
         print(f"Could not extract {url}: {e}")
-
-        return ""
+        return "", ""
 
 
 for source, feed_url in RSS_FEEDS.items():
@@ -105,7 +124,7 @@ for source, feed_url in RSS_FEEDS.items():
         if published < cutoff:
             continue
 
-        description = get_article_description(
+        description, image_url = get_article_details(
             article.get("link", "")
         )
 
@@ -115,7 +134,8 @@ for source, feed_url in RSS_FEEDS.items():
             description,
             source,
             article.get("link", ""),
-            extracted_at
+            extracted_at,
+            image_url  # Column G
         ])
 
 
@@ -143,7 +163,7 @@ worksheet = sheet.worksheet("AI Test")
 if recent_articles:
 
     worksheet.update(
-        range_name=f"A1:F{len(recent_articles)}",
+        range_name=f"A1:G{len(recent_articles)}",
         values=recent_articles
     )
 

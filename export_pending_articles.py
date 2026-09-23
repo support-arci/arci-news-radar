@@ -26,10 +26,7 @@ pending_articles = []
 # 3. Iterate over rows (starting from Row 2) to find unprocessed articles
 for idx, row in enumerate(records[1:], start=2):
     title = row[1] if len(row) > 1 else ""
-    description = row[2] if len(row) > 2 else ""
-    source = row[3] if len(row) > 3 else ""
     url = row[4] if len(row) > 4 else ""
-    ai_output = row[7] if len(row) > 7 else ""
 
     # Skip if title is missing or if AI Output is already filled
     if not title.strip() or ai_output.strip():
@@ -38,8 +35,6 @@ for idx, row in enumerate(records[1:], start=2):
     pending_articles.append({
         "rowIndex": idx,
         "title": title.strip(),
-        "description": description.strip(),
-        "source": source.strip(),
         "url": url.strip()
     })
 

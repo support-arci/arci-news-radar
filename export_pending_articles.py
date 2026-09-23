@@ -29,7 +29,7 @@ for idx, row in enumerate(records[1:], start=2):
     url = row[4] if len(row) > 4 else ""
 
     # Skip if title is missing or if AI Output is already filled
-    if not title.strip() or ai_output.strip():
+    if not title.strip():
         continue
 
     pending_articles.append({

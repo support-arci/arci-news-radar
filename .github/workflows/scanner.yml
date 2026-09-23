@@ -4,13 +4,22 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      script_choice:
+        description: "Select which script to run:"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - "both"
+          - "scanner_only"
+          - "exporter_only"
 
-# Grant write permissions so GitHub Actions can push pending_articles.json back to your repository
 permissions:
   contents: write
 
 jobs:
-  scan:
+  scan-and-export:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,19 +34,34 @@ jobs:
       - name: Install dependencies
         run: pip install gspread feedparser beautifulsoup4 requests
 
+      # Runs news_radar.py if scheduled OR if "both" / "scanner_only" is selected
       - name: Run scanner
+        if: |
+          github.event_name == 'schedule' || 
+          github.event.inputs.script_choice == 'both' || 
+          github.event.inputs.script_choice == 'scanner_only'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python news_radar.py
 
+      # Runs export_pending_articles.py if scheduled OR if "both" / "exporter_only" is selected
       - name: Export pending articles for GPT
+        if: |
+          github.event_name == 'schedule' || 
+          github.event.inputs.script_choice == 'both' || 
+          github.event.inputs.script_choice == 'exporter_only'
         env:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python export_pending_articles.py
 
+      # Commits the JSON file if exporter ran
       - name: Commit and push pending_articles.json
+        if: |
+          github.event_name == 'schedule' || 
+          github.event.inputs.script_choice == 'both' || 
+          github.event.inputs.script_choice == 'exporter_only'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"

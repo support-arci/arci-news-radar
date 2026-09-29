@@ -16,10 +16,10 @@ if len(records) <= 1:
     print("No articles found in sheet.")
     exit()
 
-# Ensure Column H has a header ("AI Output")
+# Ensure Column H has a header ("Image")
 headers = records[0]
-if len(headers) < 8 or headers[7] != "AI Output":
-    worksheet.update_cell(1, 8, "AI Output")
+if len(headers) < 8 or headers[7] != "image":
+    worksheet.update_cell(1, 8, "image")
 
 pending_articles = []
 
@@ -28,7 +28,7 @@ for idx, row in enumerate(records[1:], start=2):
     title = row[1] if len(row) > 1 else ""
     url = row[4] if len(row) > 4 else ""
 
-    # Skip if title is missing or if AI Output is already filled
+    # Skip if title is missing or if image is already filled
     if not title.strip():
         continue
 

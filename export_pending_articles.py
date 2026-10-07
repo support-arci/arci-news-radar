@@ -21,56 +21,55 @@ headers = records[0]
 headers_lower = [h.strip().lower() for h in headers]
 
 # Ensure Column H (Image) exists
-if len(headers) < 8 or headers_lower[7] != "image":
+if len(headers) < 8 or headers_lower[7] not in ["image", "article_image"]:
     worksheet.update_cell(1, 8, "image")
 
 # Ensure Column K (Live/Archived status) exists
 if len(headers) < 11 or headers_lower[10] not in ["live/archived", "status", "state"]:
     worksheet.update_cell(1, 11, "Live/Archived")
 
-# 3. Clean up the sheet - Hard Cap at 60 Articles (61 Rows including header)
-if len(records) > 61:
-    rows_to_delete = len(records) - 61
-    worksheet.delete_rows(62, len(records))
-    print(f"Deleted {rows_to_delete} excess rows to maintain the 60 article cap.")
-    # Re-fetch records after deletion
+# 3. Hard Cap at 60 Articles (61 Rows including header)
+MAX_TOTAL_ARTICLES = 60
+if len(records) > (MAX_TOTAL_ARTICLES + 1):
+    rows_to_delete = len(records) - (MAX_TOTAL_ARTICLES + 1)
+    worksheet.delete_rows(MAX_TOTAL_ARTICLES + 2, len(records))
+    print(f"Pruned {rows_to_delete} older rows to maintain the 60-article maximum limit.")
     records = worksheet.get_all_values()
 
 pending_articles = []
 updates = []
 
-# Time cutoffs for archiving
 now_utc = datetime.now(timezone.utc)
 five_days_ago = now_utc - timedelta(days=5)
 
-# 4. Iterate over rows (starting from Row 2)
+# 4. Process Statuses Based on 5-Day Rule
 for idx, row in enumerate(records[1:], start=2):
     date_str = row[0] if len(row) > 0 else ""
     title = row[1] if len(row) > 1 else ""
     url = row[5] if len(row) > 5 else "" # URL is Column F
     current_status = row[10].strip() if len(row) > 10 else ""
     
-    if not title.strip() or not date_str.strip():
+    if not title.strip():
         continue
 
-    # Parse ISO Date and Check Age
-    try:
-        # Handles standard ISO 8601 formatting, replacing 'Z' with explicit UTC offset
-        published_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-        
-        # If older than 5 days, Archive it. Otherwise, Live.
-        expected_status = "Archived" if published_date < five_days_ago else "Live"
-    except ValueError:
-        expected_status = "Live" # Default fallback if date is manually malformed
+    # Determine status: Live if <= 5 days old, Archived if > 5 days old
+    expected_status = "Live"
+    if date_str.strip():
+        try:
+            published_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            if published_date < five_days_ago:
+                expected_status = "Archived"
+        except ValueError:
+            expected_status = "Live"
 
-    # Queue status update if necessary
+    # Queue Column K update if status changed
     if current_status != expected_status:
         updates.append({
             'range': f'K{idx}',
             'values': [[expected_status]]
         })
 
-    # Check for missing images to process (Column H, index 7)
+    # Queue missing images for processing (Column H, index 7)
     image = row[7] if len(row) > 7 else ""
     if not image.strip():
         pending_articles.append({
@@ -79,18 +78,18 @@ for idx, row in enumerate(records[1:], start=2):
             "url": url.strip()
         })
 
-# Batch update live/archived statuses efficiently
+# Batch update live/archived statuses in Column K
 if updates:
     worksheet.batch_update(updates)
-    print(f"Updated {len(updates)} articles with Live/Archived statuses.")
+    print(f"Updated status for {len(updates)} article(s) in Column K.")
 else:
-    print("All article statuses are already up to date.")
+    print("All article statuses in Column K are up to date.")
 
-print(f"Found {len(pending_articles)} pending article(s) to process images.")
+print(f"Found {len(pending_articles)} pending article(s) needing image processing.")
 
-# 5. Save to pending_articles.json
+# 5. Save pending articles to JSON for GPT processing
 output_file = "pending_articles.json"
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(pending_articles, f, indent=2, ensure_ascii=False)
 
-print(f"Successfully saved to '{output_file}'.")
+print(f"Successfully saved pending articles to '{output_file}'.")

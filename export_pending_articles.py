@@ -1,95 +1,246 @@
 import os
 import json
+import requests
 import gspread
-from datetime import datetime, timezone, timedelta
+import feedparser
 
-# 1. Initialize Google Sheets Client
+from bs4 import BeautifulSoup
+from datetime import datetime, timezone, timedelta
+from urllib.parse import urljoin
+
+# 18 distinct, high-quality Higher Education RSS feeds
+RSS_FEEDS = {
+    "Inside Higher Ed": "https://www.insidehighered.com/rss.xml",
+    "Higher Ed Dive": "https://www.highereddive.com/feeds/news/",
+    "The PIE News": "https://thepienews.com/feed/",
+    "Chronicle of Higher Education": "https://www.chronicle.com/rss",
+    "University World News": "https://www.universityworldnews.com/rss.php",
+    "EdSurge": "https://www.edsurge.com/articles_rss",
+    "The Hechinger Report": "https://hechingerreport.org/category/higher-education/feed/",
+    "Diverse: Issues In Higher Ed": "https://www.diverseeducation.com/feed/",
+    "Times Higher Education": "https://www.timeshighereducation.com/rss/news.xml",
+    "Campus Technology": "https://campustechnology.com/rss-feeds/all-articles.aspx",
+    "Educause": "https://er.educause.edu/rss/er-rss",
+    "Open Campus": "https://www.opencampusmedia.org/feed/",
+    "Wonkhe": "https://wonkhe.com/feed/",
+    "Forbes Education": "https://www.forbes.com/education/feed/",
+    "Erudera News": "https://erudera.com/news/rss/",
+    "University Business": "https://universitybusiness.com/feed/",
+    "FE News (Higher Ed)": "https://www.fenews.co.uk/category/sector-news/higher-education/feed/",
+    "Research Professional News": "https://www.researchprofessionalnews.com/feed/"
+}
+
+# Expanded to 72 hours so less frequent publishers are captured
+cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
+extracted_at = datetime.now(timezone.utc).isoformat()
+recent_articles = []
+
+# Source diversity cap per run
+MAX_ARTICLES_PER_SOURCE = 5
+
+def clean_text(raw_html):
+    """Strips HTML tags cleanly from RSS feed summaries or content."""
+    if not raw_html:
+        return ""
+    soup = BeautifulSoup(raw_html, "html.parser")
+    return soup.get_text(" ", strip=True)
+
+def extract_rss_image(entry):
+    """Extracts image URLs directly from RSS feed media tags."""
+    if "media_content" in entry and entry.media_content:
+        for media in entry.media_content:
+            if media.get("url"):
+                return media["url"]
+    if "media_thumbnail" in entry and entry.media_thumbnail:
+        for media in entry.media_thumbnail:
+            if media.get("url"):
+                return media["url"]
+    if "enclosures" in entry and entry.enclosures:
+        for enc in entry.enclosures:
+            if enc.get("type", "").startswith("image") and enc.get("href"):
+                return enc["href"]
+    return ""
+
+def get_article_details(url, entry, source_name):
+    """
+    Scrapes full article text, subtitle, and image from the web page.
+    Uses urljoin to prevent relative image breakages and falls back to RSS data.
+    """
+    description_long = ""
+    subtitle = ""
+    image_url = extract_rss_image(entry)
+
+    try:
+        response = requests.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            },
+            timeout=12
+        )
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            # 1. Extract Image from Page Meta if RSS didn't provide one
+            if not image_url or "fenews" in url.lower():
+                og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
+                if og_image and og_image.get("content") and not "default" in og_image["content"].lower():
+                    image_url = og_image["content"]
+                else:
+                    twitter_image = soup.find("meta", property="twitter:image") or soup.find("meta", attrs={"name": "twitter:image"})
+                    if twitter_image and twitter_image.get("content"):
+                        image_url = twitter_image["content"]
+
+            # Ensure image URL is absolute (fixes Diverse Education & relative path issues)
+            if image_url:
+                image_url = urljoin(url, image_url)
+
+            # 2. Extract Subtitle / Dek (Includes Drupal & Wonkhe selectors)
+            subtitle_selectors = [
+                ".field--name-field-summary", ".field--name-field-subtitle",
+                ".subtitle", ".sub-title", ".dek", ".article-subtitle", 
+                ".entry-subtitle", ".teaser", "[class*='subtitle']", "[class*='dek']"
+            ]
+            for selector in subtitle_selectors:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(" ", strip=True)
+                    if text and len(text) > 15:
+                        subtitle = text
+                        break
+
+            if not subtitle:
+                og_desc = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"}) or soup.find("meta", property="twitter:description")
+                if og_desc and og_desc.get("content"):
+                    subtitle = og_desc["content"].strip()
+
+            # 3. Locate Main Article Container
+            possible_containers = (
+                soup.find_all(['article', 'main']) + 
+                soup.find_all('div', class_=lambda c: c and any(sub in str(c).lower() for sub in [
+                    'article-body', 'post-content', 'entry-content', 'content-body', 
+                    'story-content', 'field--name-body', 'pf-content', 'single-post-content', 'td-post-content'
+                ]))
+            )
+            
+            target_container = None
+            max_p_count = 0
+            for container in possible_containers:
+                p_count = len(container.find_all("p"))
+                if p_count > max_p_count:
+                    max_p_count = p_count
+                    target_container = container
+
+            if not target_container:
+                target_container = soup
+
+            # Clean out non-body elements
+            for tag in target_container.find_all(["script", "style", "nav", "figure", "aside", "form", "footer", "header", "div.related"]):
+                tag.decompose()
+
+            # Extract paragraphs
+            paragraphs = []
+            for p in target_container.find_all("p"):
+                text = p.get_text(" ", strip=True)
+                if len(text) > 35 and not any(skip in text.lower() for skip in ["subscribe", "rights reserved", "cookie", "sign up", "read more"]):
+                    paragraphs.append(text)
+
+            description_long = "\n\n".join(paragraphs)
+
+            # Fallback Image from Article Body
+            if not image_url and target_container:
+                first_img = target_container.find("img")
+                if first_img and first_img.get("src"):
+                    image_url = urljoin(url, first_img["src"])
+
+    except Exception as e:
+        print(f"Scrape notice for {url}: {e}")
+
+    # --- FALLBACK 1: Subtitle ---
+    if not subtitle or len(subtitle) < 10:
+        rss_summary = clean_text(entry.get("summary", "") or entry.get("description", ""))
+        if rss_summary:
+            subtitle = rss_summary[:220].rsplit(' ', 1)[0] + "..." if len(rss_summary) > 220 else rss_summary
+
+    # --- FALLBACK 2: Long Description (Ensures 100% Retrieval for Wonkhe/Diverse) ---
+    if len(description_long) < 120:
+        feed_body = ""
+        if "content" in entry and entry.content:
+            feed_body = clean_text(entry.content[0].value)
+        if len(feed_body) < 120:
+            feed_body = clean_text(entry.get("summary", "") or entry.get("description", ""))
+        
+        if feed_body:
+            description_long = feed_body
+
+    return description_long, subtitle, image_url
+
+
+# Fetch articles across all feeds
+for source, feed_url in RSS_FEEDS.items():
+    try:
+        feed = feedparser.parse(feed_url)
+        print(f"{source}: {len(feed.entries)} entries parsed")
+        
+        added_for_source = 0
+
+        for article in feed.entries:
+            if added_for_source >= MAX_ARTICLES_PER_SOURCE:
+                break
+
+            if hasattr(article, "published_parsed") and article.published_parsed:
+                published = datetime(*article.published_parsed[:6], tzinfo=timezone.utc)
+            elif hasattr(article, "updated_parsed") and article.updated_parsed:
+                published = datetime(*article.updated_parsed[:6], tzinfo=timezone.utc)
+            else:
+                published = datetime.now(timezone.utc)
+
+            if published < cutoff:
+                continue
+
+            link = article.get("link", "")
+            description_long, subtitle, image_url = get_article_details(link, article, source)
+            
+            # Guarantees all valid articles populate
+            if description_long and article.get("title", ""):
+                recent_articles.append([
+                    published.isoformat(),
+                    article.get("title", "").strip(), # Column B: article_title
+                    subtitle.strip(),                 # Column C: article_subtitle
+                    description_long.strip(),         # Column D: article_description
+                    source,                           # Column E: source
+                    link,                             # Column F: url
+                    extracted_at,                     # Column G: extracted_at
+                    image_url,                        # Column H: image / article_image
+                    "",                               # Column I
+                    "",                               # Column J
+                    "Live"                            # Column K: Live/Archived
+                ])
+                added_for_source += 1
+
+    except Exception as e:
+        print(f"Failed parsing feed {source}: {e}")
+
+recent_articles.sort(key=lambda x: x[0], reverse=True)
+print(f"Total newly gathered articles across all sources: {len(recent_articles)}")
+
+# Upload to Google Sheets
 credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 gc = gspread.service_account_from_dict(credentials)
+worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
-sheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI")
-worksheet = sheet.worksheet("AI Test")
-
-# 2. Fetch all records from the sheet
-records = worksheet.get_all_values()
-
-if len(records) <= 1:
-    print("No articles found in sheet.")
-    exit()
-
-headers = records[0]
-headers_lower = [h.strip().lower() for h in headers]
-
-# Ensure Column H (Image) exists
-if len(headers) < 8 or headers_lower[7] not in ["image", "article_image"]:
-    worksheet.update_cell(1, 8, "image")
-
-# Ensure Column K (Live/Archived status) exists
-if len(headers) < 11 or headers_lower[10] not in ["live/archived", "status", "state"]:
-    worksheet.update_cell(1, 11, "Live/Archived")
-
-# 3. Hard Cap at 60 Articles (61 Rows including header)
-MAX_TOTAL_ARTICLES = 60
-if len(records) > (MAX_TOTAL_ARTICLES + 1):
-    rows_to_delete = len(records) - (MAX_TOTAL_ARTICLES + 1)
-    worksheet.delete_rows(MAX_TOTAL_ARTICLES + 2, len(records))
-    print(f"Pruned {rows_to_delete} older rows to maintain the 60-article maximum limit.")
-    records = worksheet.get_all_values()
-
-pending_articles = []
-updates = []
-
-now_utc = datetime.now(timezone.utc)
-five_days_ago = now_utc - timedelta(days=5)
-
-# 4. Process Statuses Based on 5-Day Rule
-for idx, row in enumerate(records[1:], start=2):
-    date_str = row[0] if len(row) > 0 else ""
-    title = row[1] if len(row) > 1 else ""
-    url = row[5] if len(row) > 5 else "" # URL is Column F
-    current_status = row[10].strip() if len(row) > 10 else ""
+if recent_articles:
+    existing_records = worksheet.get_all_values()
+    existing_urls = [row[5] for row in existing_records if len(row) > 5] # Column F (URL)
     
-    if not title.strip():
-        continue
-
-    # Determine status: Live if <= 5 days old, Archived if > 5 days old
-    expected_status = "Live"
-    if date_str.strip():
-        try:
-            published_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-            if published_date < five_days_ago:
-                expected_status = "Archived"
-        except ValueError:
-            expected_status = "Live"
-
-    # Queue Column K update if status changed
-    if current_status != expected_status:
-        updates.append({
-            'range': f'K{idx}',
-            'values': [[expected_status]]
-        })
-
-    # Queue missing images for processing (Column H, index 7)
-    image = row[7] if len(row) > 7 else ""
-    if not image.strip():
-        pending_articles.append({
-            "rowIndex": idx,
-            "title": title.strip(),
-            "url": url.strip()
-        })
-
-# Batch update live/archived statuses in Column K
-if updates:
-    worksheet.batch_update(updates)
-    print(f"Updated status for {len(updates)} article(s) in Column K.")
+    new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
+    
+    if new_unique_articles:
+        # Insert at Row 2 so newest articles push older ones down
+        worksheet.insert_rows(new_unique_articles, 2)
+        print(f"Successfully inserted {len(new_unique_articles)} new unique articles at the top.")
+    else:
+        print("No new unique articles to upload.")
 else:
-    print("All article statuses in Column K are up to date.")
-
-print(f"Found {len(pending_articles)} pending article(s) needing image processing.")
-
-# 5. Save pending articles to JSON for GPT processing
-output_file = "pending_articles.json"
-with open(output_file, "w", encoding="utf-8") as f:
-    json.dump(pending_articles, f, indent=2, ensure_ascii=False)
-
-print(f"Successfully saved pending articles to '{output_file}'.")
+    print("No recent articles found in 72h window.")

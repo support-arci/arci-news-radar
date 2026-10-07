@@ -35,7 +35,7 @@ extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
 # Limits articles per source to prevent any single publisher from flooding the feed
-MAX_ARTICLES_PER_SOURCE = 3
+MAX_ARTICLES_PER_SOURCE = 5
 
 def clean_html(raw_html):
     """Utility to strip HTML tags from RSS feed summaries/content."""

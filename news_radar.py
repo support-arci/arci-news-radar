@@ -7,7 +7,7 @@ import feedparser
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone, timedelta
 
-# Expanded to 16 distinct, high-quality Higher Education feeds
+# Expanded to 18 distinct, high-quality Higher Education RSS feeds
 RSS_FEEDS = {
     "Inside Higher Ed": "https://www.insidehighered.com/rss.xml",
     "Higher Ed Dive": "https://www.highereddive.com/feeds/news/",
@@ -24,142 +24,181 @@ RSS_FEEDS = {
     "Wonkhe": "https://wonkhe.com/feed/",
     "Forbes Education": "https://www.forbes.com/education/feed/",
     "Erudera News": "https://erudera.com/news/rss/",
-    "University Business": "https://universitybusiness.com/feed/"
+    "University Business": "https://universitybusiness.com/feed/",
+    "FE News (Higher Ed)": "https://www.fenews.co.uk/category/sector-news/higher-education/feed/",
+    "Research Professional News": "https://www.researchprofessionalnews.com/feed/"
 }
 
-cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+# Look back 72 hours so slower-publishing sources are included
+cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
-# Limits how many articles we fetch per source to ensure diversity
-MAX_ARTICLES_PER_SOURCE = 7
+# Limits articles per source to prevent any single publisher from flooding the feed
+MAX_ARTICLES_PER_SOURCE = 3
 
-def get_article_details(url):
+def clean_html(raw_html):
+    """Utility to strip HTML tags from RSS feed summaries/content."""
+    if not raw_html:
+        return ""
+    soup = BeautifulSoup(raw_html, "html.parser")
+    return soup.get_text(" ", strip=True)
+
+def get_article_details(url, entry):
+    """
+    Scrapes full article text, subtitle, and image from the web page.
+    Falls back to RSS feed content/summary if web scraping fails.
+    """
+    description_long = ""
+    subtitle = ""
+    image_url = ""
+
+    # Attempt Live Web Scraping
     try:
         response = requests.get(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
             },
-            timeout=15
+            timeout=12
         )
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
 
-        # 1. Extract image URL
-        image_url = ""
-        og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
-        if og_image and og_image.get("content"):
-            image_url = og_image["content"]
-        else:
-            twitter_image = soup.find("meta", property="twitter:image") or soup.find("meta", attrs={"name": "twitter:image"})
-            if twitter_image and twitter_image.get("content"):
-                image_url = twitter_image["content"]
+            # 1. Extract image URL (Meta OpenGraph / Twitter)
+            og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
+            if og_image and og_image.get("content"):
+                image_url = og_image["content"]
+            else:
+                twitter_image = soup.find("meta", property="twitter:image") or soup.find("meta", attrs={"name": "twitter:image"})
+                if twitter_image and twitter_image.get("content"):
+                    image_url = twitter_image["content"]
 
-        # 2. Find main article container (Intelligent Fallback Method)
-        # Search for tags that typically contain the article body
-        possible_containers = soup.find_all(['article', 'main']) + soup.find_all('div', class_=lambda c: c and any(sub in c.lower() for sub in ['article-body', 'post-content', 'entry-content', 'content-body', 'story-content', 'article-content']))
-        
-        article = None
-        max_p_count = 0
+            # 2. Extract Subtitle / Dek
+            subtitle_selectors = [
+                ".subtitle", ".sub-title", ".dek", ".article-subtitle", 
+                ".entry-subtitle", ".field--name-field-subtitle", 
+                "[class*='subtitle']", "[class*='dek']"
+            ]
+            for selector in subtitle_selectors:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(" ", strip=True)
+                    if text and len(text) > 15:
+                        subtitle = text
+                        break
 
-        # Pick the container that has the highest number of paragraph tags
-        for container in possible_containers:
-            p_count = len(container.find_all("p"))
-            if p_count > max_p_count:
-                max_p_count = p_count
-                article = container
+            if not subtitle:
+                og_desc = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"}) or soup.find("meta", property="twitter:description")
+                if og_desc and og_desc.get("content"):
+                    subtitle = og_desc["content"].strip()
 
-        if not article:
-            return "", "", image_url
+            # 3. Locate Main Article Container
+            possible_containers = (
+                soup.find_all(['article', 'main']) + 
+                soup.find_all('div', class_=lambda c: c and any(sub in str(c).lower() for sub in ['article-body', 'post-content', 'entry-content', 'content-body', 'story-content', 'field--name-body', 'pf-content', 'single-post-content']))
+            )
+            
+            target_container = None
+            max_p_count = 0
+            for container in possible_containers:
+                p_count = len(container.find_all("p"))
+                if p_count > max_p_count:
+                    max_p_count = p_count
+                    target_container = container
 
-        if not image_url:
-            first_img = article.find("img")
-            if first_img and first_img.get("src"):
-                image_url = first_img["src"]
+            if not target_container:
+                target_container = soup
 
-        # 3. Extract subtitle
-        subtitle = ""
-        subtitle_selectors = [".subtitle", ".sub-title", ".dek", ".article-subtitle", ".entry-subtitle", "[class*='subtitle']", "[class*='dek']"]
-        for selector in subtitle_selectors:
-            element = article.select_one(selector)
-            if element:
-                text = element.get_text(" ", strip=True)
-                if text:
-                    subtitle = text
-                    break
+            # Clean out boilerplate tags
+            for tag in target_container.find_all(["script", "style", "nav", "figure", "aside", "form", "footer", "header", "div.related"]):
+                tag.decompose()
 
-        if not subtitle:
-            og_desc = soup.find("meta", property="og:description")
-            if og_desc and og_desc.get("content"): subtitle = og_desc["content"].strip()
+            # Extract paragraphs
+            paragraphs = []
+            for p in target_container.find_all("p"):
+                text = p.get_text(" ", strip=True)
+                if len(text) > 35 and not any(skip in text.lower() for skip in ["subscribe", "rights reserved", "cookie", "sign up"]):
+                    paragraphs.append(text)
 
-        # 4. Remove unwanted elements
-        for tag in article.find_all(["script", "style", "nav", "figure", "img", "aside", "form", "footer", "div.related"]):
-            tag.decompose()
+            description_long = "\n\n".join(paragraphs)
 
-        # 5. Extract ENTIRE article content safely
-        paragraphs = []
-        for p in article.find_all("p"):
-            text = p.get_text(" ", strip=True)
-            if len(text) > 40:  # Filters out random social links or tags
-                paragraphs.append(text)
-
-        description_long = "\n\n".join(paragraphs)
-
-        return description_long, subtitle, image_url
+            if not image_url and target_container:
+                first_img = target_container.find("img")
+                if first_img and first_img.get("src"):
+                    image_url = first_img["src"]
 
     except Exception as e:
-        print(f"Could not extract {url}: {e}")
-        return "", "", ""
+        print(f"Scrape warning for {url}: {e}")
 
-# Fetch articles
+    # --- FALLBACK 1: Subtitle ---
+    if not subtitle or len(subtitle) < 10:
+        rss_summary = clean_html(entry.get("summary", "") or entry.get("description", ""))
+        if rss_summary:
+            subtitle = rss_summary[:200].rsplit(' ', 1)[0] + "..." if len(rss_summary) > 200 else rss_summary
+
+    # --- FALLBACK 2: Long Description (Ensures 100% Retrieval) ---
+    if len(description_long) < 150:
+        feed_body = ""
+        if "content" in entry and entry.content:
+            feed_body = clean_html(entry.content[0].value)
+        if len(feed_body) < 150:
+            feed_body = clean_html(entry.get("summary", "") or entry.get("description", ""))
+        
+        if feed_body:
+            description_long = feed_body
+
+    return description_long, subtitle, image_url
+
+
+# Fetch articles across all feeds
 for source, feed_url in RSS_FEEDS.items():
     try:
         feed = feedparser.parse(feed_url)
-        print(f"{source}: {len(feed.entries)} entries found")
+        print(f"{source}: {len(feed.entries)} entries parsed")
         
         added_for_source = 0
 
         for article in feed.entries:
             if added_for_source >= MAX_ARTICLES_PER_SOURCE:
-                break # Move to the next news source once cap is hit
+                break
 
             if hasattr(article, "published_parsed") and article.published_parsed:
                 published = datetime(*article.published_parsed[:6], tzinfo=timezone.utc)
             elif hasattr(article, "updated_parsed") and article.updated_parsed:
                 published = datetime(*article.updated_parsed[:6], tzinfo=timezone.utc)
             else:
-                continue
+                published = datetime.now(timezone.utc)
 
             if published < cutoff:
                 continue
 
             link = article.get("link", "")
-            description_long, subtitle, image_url = get_article_details(link)
+            description_long, subtitle, image_url = get_article_details(link, article)
             
-            # Only count it if we actually retrieved a description
-            if description_long:
+            # Ensure article has content before adding
+            if description_long and article.get("title", ""):
                 recent_articles.append([
                     published.isoformat(),
-                    article.get("title", ""),
-                    subtitle,
-                    description_long,
-                    source,
-                    link,
-                    extracted_at,
-                    image_url,
-                    "", # Col I empty
-                    "", # Col J empty
-                    "Live" # Col K (Status)
+                    article.get("title", "").strip(), # Column B: article_title
+                    subtitle.strip(),                 # Column C: article_subtitle
+                    description_long.strip(),         # Column D: article_description
+                    source,                           # Column E: source
+                    link,                             # Column F: url
+                    extracted_at,                     # Column G: extracted_at
+                    image_url,                        # Column H: image / article_image
+                    "",                               # Column I
+                    "",                               # Column J
+                    "Live"                            # Column K: Live/Archived
                 ])
                 added_for_source += 1
 
     except Exception as e:
-        print(f"Failed parsing {source}: {e}")
+        print(f"Failed parsing feed {source}: {e}")
 
 recent_articles.sort(key=lambda x: x[0], reverse=True)
-print(f"Total newly fetched articles: {len(recent_articles)}")
+print(f"Total newly gathered articles: {len(recent_articles)}")
 
 # Upload to Google Sheets
 credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
@@ -167,17 +206,16 @@ gc = gspread.service_account_from_dict(credentials)
 worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
 if recent_articles:
-    # 1. Fetch existing URLs to avoid duplicate uploads
     existing_records = worksheet.get_all_values()
-    existing_urls = [row[5] for row in existing_records if len(row) > 5] # URL is in column F (index 5)
+    existing_urls = [row[5] for row in existing_records if len(row) > 5] # Column F (URL)
     
     new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
     
     if new_unique_articles:
-        # INSERT at row 2, pushing all old articles down
+        # Insert at Row 2 so newest articles push down older ones
         worksheet.insert_rows(new_unique_articles, 2)
-        print(f"Successfully inserted {len(new_unique_articles)} new articles at the top.")
+        print(f"Successfully inserted {len(new_unique_articles)} new unique articles at the top.")
     else:
         print("No new unique articles to upload.")
 else:
-    print("No recent articles found.")
+    print("No recent articles found in 72h window.")

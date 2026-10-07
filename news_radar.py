@@ -35,7 +35,7 @@ cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
-# Limits articles per source
+# Limits articles per source to 5
 MAX_ARTICLES_PER_SOURCE = 5
 
 def clean_text(raw_html):
@@ -74,7 +74,7 @@ def get_article_details(url, entry, source_name):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
 
-            # 1. Image
+            # Image
             if not image_url or "fenews" in url.lower():
                 og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
                 if og_image and og_image.get("content") and "default" not in og_image["content"].lower():
@@ -83,7 +83,7 @@ def get_article_details(url, entry, source_name):
             if image_url:
                 image_url = urljoin(url, image_url)
 
-            # 2. Subtitle
+            # Subtitle
             subtitle_selectors = [
                 ".field--name-field-summary", ".field--name-field-subtitle",
                 ".subtitle", ".sub-title", ".dek", ".article-subtitle", 
@@ -102,7 +102,7 @@ def get_article_details(url, entry, source_name):
                 if og_desc and og_desc.get("content"):
                     subtitle = og_desc["content"].strip()
 
-            # 3. Main Body
+            # Main Body
             possible_containers = (
                 soup.find_all(['article', 'main']) + 
                 soup.find_all('div', class_=lambda c: c and any(sub in str(c).lower() for sub in [
@@ -186,16 +186,15 @@ for source, feed_url in RSS_FEEDS.items():
             raw_title = article.get("title", "").strip()
 
             if description_long and raw_title:
-                # MAP STRICTLY TO A-N (14 Columns)
                 row_data = [
                     published.isoformat(),     # A: published
-                    raw_title,                 # B: title (legacy)
-                    subtitle.strip(),          # C: subtitle (legacy)
-                    description_long.strip(),  # D: description_long (legacy)
+                    raw_title,                 # B: title
+                    subtitle.strip(),          # C: subtitle
+                    description_long.strip(),  # D: description_long
                     source,                    # E: source
                     link,                      # F: url
                     extracted_at,              # G: extracted_at
-                    image_url,                 # H: image (legacy)
+                    image_url,                 # H: image
                     "",                        # I: hero
                     description_long.strip(),  # J: article_description
                     "Live",                    # K: Live/Archived
@@ -210,23 +209,26 @@ for source, feed_url in RSS_FEEDS.items():
         print(f"Failed parsing feed {source}: {e}")
 
 recent_articles.sort(key=lambda x: x[0], reverse=True)
-print(f"Total newly gathered articles across all sources: {len(recent_articles)}")
+print(f"Total newly gathered articles: {len(recent_articles)}")
 
-# Upload to Google Sheets
+# Upload to Google Sheets (Column Range A2:N61 ONLY)
 credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 gc = gspread.service_account_from_dict(credentials)
 worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
-if recent_articles:
-    existing_records = worksheet.get_all_values()
-    existing_urls = [row[5] for row in existing_records if len(row) > 5] # Column F
+# Fetch existing rows in Columns A to N ONLY so we don't shift side columns
+existing_rows = worksheet.get_values("A2:N61")
+existing_urls = set(row[5] for row in existing_rows if len(row) > 5 and row[5].strip())
+
+new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
+
+if new_unique_articles:
+    # Prepend new articles to existing rows and cap at 60
+    combined = new_unique_articles + existing_rows
+    combined = combined[:60]
     
-    new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
-    
-    if new_unique_articles:
-        worksheet.insert_rows(new_unique_articles, 2)
-        print(f"Successfully inserted {len(new_unique_articles)} new unique articles at the top.")
-    else:
-        print("No new unique articles to upload.")
+    # Write back to A2:N range without touching side columns!
+    worksheet.update(range_name="A2", values=combined)
+    print(f"Successfully updated A2:N with {len(new_unique_articles)} new articles. Side columns remained untouched.")
 else:
-    print("No recent articles found in 72h window.")
+    print("No new unique articles to upload.")

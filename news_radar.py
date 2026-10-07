@@ -31,11 +31,17 @@ cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
+# Limits how many articles we fetch per source to ensure diversity
+MAX_ARTICLES_PER_SOURCE = 7
+
 def get_article_details(url):
     try:
         response = requests.get(
             url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"},
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            },
             timeout=15
         )
         response.raise_for_status()
@@ -51,11 +57,20 @@ def get_article_details(url):
             if twitter_image and twitter_image.get("content"):
                 image_url = twitter_image["content"]
 
-        # 2. Find main article container (Broadened for PIE News & others)
-        article = soup.find("article")
-        if not article:
-            article = soup.find("div", class_="post-content") or soup.find("div", class_="entry-content") or soup.find("main")
+        # 2. Find main article container (Intelligent Fallback Method)
+        # Search for tags that typically contain the article body
+        possible_containers = soup.find_all(['article', 'main']) + soup.find_all('div', class_=lambda c: c and any(sub in c.lower() for sub in ['article-body', 'post-content', 'entry-content', 'content-body', 'story-content', 'article-content']))
         
+        article = None
+        max_p_count = 0
+
+        # Pick the container that has the highest number of paragraph tags
+        for container in possible_containers:
+            p_count = len(container.find_all("p"))
+            if p_count > max_p_count:
+                max_p_count = p_count
+                article = container
+
         if not article:
             return "", "", image_url
 
@@ -102,9 +117,14 @@ def get_article_details(url):
 for source, feed_url in RSS_FEEDS.items():
     try:
         feed = feedparser.parse(feed_url)
-        print(f"{source}: {len(feed.entries)} entries")
+        print(f"{source}: {len(feed.entries)} entries found")
         
+        added_for_source = 0
+
         for article in feed.entries:
+            if added_for_source >= MAX_ARTICLES_PER_SOURCE:
+                break # Move to the next news source once cap is hit
+
             if hasattr(article, "published_parsed") and article.published_parsed:
                 published = datetime(*article.published_parsed[:6], tzinfo=timezone.utc)
             elif hasattr(article, "updated_parsed") and article.updated_parsed:
@@ -118,20 +138,23 @@ for source, feed_url in RSS_FEEDS.items():
             link = article.get("link", "")
             description_long, subtitle, image_url = get_article_details(link)
             
-            # Ensure 11 columns match Sheet: [Date, Title, Subtitle, LongDesc, Source, URL, ExtractedAt, Image, ColI, ColJ, Status]
-            recent_articles.append([
-                published.isoformat(),
-                article.get("title", ""),
-                subtitle,
-                description_long,
-                source,
-                link,
-                extracted_at,
-                image_url,
-                "", # Col I empty
-                "", # Col J empty
-                "Live" # Col K (Status)
-            ])
+            # Only count it if we actually retrieved a description
+            if description_long:
+                recent_articles.append([
+                    published.isoformat(),
+                    article.get("title", ""),
+                    subtitle,
+                    description_long,
+                    source,
+                    link,
+                    extracted_at,
+                    image_url,
+                    "", # Col I empty
+                    "", # Col J empty
+                    "Live" # Col K (Status)
+                ])
+                added_for_source += 1
+
     except Exception as e:
         print(f"Failed parsing {source}: {e}")
 
@@ -151,7 +174,7 @@ if recent_articles:
     new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
     
     if new_unique_articles:
-        # INSERT at row 2, pushing all old articles down!
+        # INSERT at row 2, pushing all old articles down
         worksheet.insert_rows(new_unique_articles, 2)
         print(f"Successfully inserted {len(new_unique_articles)} new articles at the top.")
     else:

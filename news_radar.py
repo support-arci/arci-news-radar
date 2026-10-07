@@ -30,31 +30,27 @@ RSS_FEEDS = {
     "Research Professional News": "https://www.researchprofessionalnews.com/feed/"
 }
 
-# Expanded to 72 hours so less frequent publishers are captured
+# Look back 72 hours
 cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
-# Source diversity cap per run
-MAX_ARTICLES_PER_SOURCE = 3
+# Limits articles per source
+MAX_ARTICLES_PER_SOURCE = 5
 
 def clean_text(raw_html):
-    """Strips HTML tags cleanly from RSS feed summaries or content."""
     if not raw_html:
         return ""
     soup = BeautifulSoup(raw_html, "html.parser")
     return soup.get_text(" ", strip=True)
 
 def extract_rss_image(entry):
-    """Extracts image URLs directly from RSS feed media tags."""
     if "media_content" in entry and entry.media_content:
         for media in entry.media_content:
-            if media.get("url"):
-                return media["url"]
+            if media.get("url"): return media["url"]
     if "media_thumbnail" in entry and entry.media_thumbnail:
         for media in entry.media_thumbnail:
-            if media.get("url"):
-                return media["url"]
+            if media.get("url"): return media["url"]
     if "enclosures" in entry and entry.enclosures:
         for enc in entry.enclosures:
             if enc.get("type", "").startswith("image") and enc.get("href"):
@@ -62,10 +58,6 @@ def extract_rss_image(entry):
     return ""
 
 def get_article_details(url, entry, source_name):
-    """
-    Scrapes full article text, subtitle, and image from the web page.
-    Uses urljoin to prevent relative image breakages and falls back to RSS data.
-    """
     description_long = ""
     subtitle = ""
     image_url = extract_rss_image(entry)
@@ -74,7 +66,7 @@ def get_article_details(url, entry, source_name):
         response = requests.get(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
             },
             timeout=12
@@ -82,21 +74,16 @@ def get_article_details(url, entry, source_name):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
 
-            # 1. Extract Image from Page Meta if RSS didn't provide one
+            # 1. Image
             if not image_url or "fenews" in url.lower():
                 og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
-                if og_image and og_image.get("content") and not "default" in og_image["content"].lower():
+                if og_image and og_image.get("content") and "default" not in og_image["content"].lower():
                     image_url = og_image["content"]
-                else:
-                    twitter_image = soup.find("meta", property="twitter:image") or soup.find("meta", attrs={"name": "twitter:image"})
-                    if twitter_image and twitter_image.get("content"):
-                        image_url = twitter_image["content"]
 
-            # Ensure image URL is absolute (fixes Diverse Education & relative path issues)
             if image_url:
                 image_url = urljoin(url, image_url)
 
-            # 2. Extract Subtitle / Dek (Includes Drupal & Wonkhe selectors)
+            # 2. Subtitle
             subtitle_selectors = [
                 ".field--name-field-summary", ".field--name-field-subtitle",
                 ".subtitle", ".sub-title", ".dek", ".article-subtitle", 
@@ -111,11 +98,11 @@ def get_article_details(url, entry, source_name):
                         break
 
             if not subtitle:
-                og_desc = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"}) or soup.find("meta", property="twitter:description")
+                og_desc = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"})
                 if og_desc and og_desc.get("content"):
                     subtitle = og_desc["content"].strip()
 
-            # 3. Locate Main Article Container
+            # 3. Main Body
             possible_containers = (
                 soup.find_all(['article', 'main']) + 
                 soup.find_all('div', class_=lambda c: c and any(sub in str(c).lower() for sub in [
@@ -135,20 +122,17 @@ def get_article_details(url, entry, source_name):
             if not target_container:
                 target_container = soup
 
-            # Clean out non-body elements
             for tag in target_container.find_all(["script", "style", "nav", "figure", "aside", "form", "footer", "header", "div.related"]):
                 tag.decompose()
 
-            # Extract paragraphs
             paragraphs = []
             for p in target_container.find_all("p"):
                 text = p.get_text(" ", strip=True)
-                if len(text) > 35 and not any(skip in text.lower() for skip in ["subscribe", "rights reserved", "cookie", "sign up", "read more"]):
+                if len(text) > 35 and not any(skip in text.lower() for skip in ["subscribe", "rights reserved", "cookie", "sign up"]):
                     paragraphs.append(text)
 
             description_long = "\n\n".join(paragraphs)
 
-            # Fallback Image from Article Body
             if not image_url and target_container:
                 first_img = target_container.find("img")
                 if first_img and first_img.get("src"):
@@ -157,13 +141,12 @@ def get_article_details(url, entry, source_name):
     except Exception as e:
         print(f"Scrape notice for {url}: {e}")
 
-    # --- FALLBACK 1: Subtitle ---
+    # Fallbacks
     if not subtitle or len(subtitle) < 10:
         rss_summary = clean_text(entry.get("summary", "") or entry.get("description", ""))
         if rss_summary:
             subtitle = rss_summary[:220].rsplit(' ', 1)[0] + "..." if len(rss_summary) > 220 else rss_summary
 
-    # --- FALLBACK 2: Long Description (Ensures 100% Retrieval for Wonkhe/Diverse) ---
     if len(description_long) < 120:
         feed_body = ""
         if "content" in entry and entry.content:
@@ -177,7 +160,6 @@ def get_article_details(url, entry, source_name):
     return description_long, subtitle, image_url
 
 
-# Fetch articles across all feeds
 for source, feed_url in RSS_FEEDS.items():
     try:
         feed = feedparser.parse(feed_url)
@@ -201,22 +183,27 @@ for source, feed_url in RSS_FEEDS.items():
 
             link = article.get("link", "")
             description_long, subtitle, image_url = get_article_details(link, article, source)
-            
-            # Guarantees all valid articles populate
-            if description_long and article.get("title", ""):
-                recent_articles.append([
-                    published.isoformat(),
-                    article.get("title", "").strip(), # Column B: article_title
-                    subtitle.strip(),                 # Column C: article_subtitle
-                    description_long.strip(),         # Column D: article_description
-                    source,                           # Column E: source
-                    link,                             # Column F: url
-                    extracted_at,                     # Column G: extracted_at
-                    image_url,                        # Column H: image / article_image
-                    "",                               # Column I
-                    "",                               # Column J
-                    "Live"                            # Column K: Live/Archived
-                ])
+            raw_title = article.get("title", "").strip()
+
+            if description_long and raw_title:
+                # MAP STRICTLY TO A-N (14 Columns)
+                row_data = [
+                    published.isoformat(),     # A: published
+                    raw_title,                 # B: title (legacy)
+                    subtitle.strip(),          # C: subtitle (legacy)
+                    description_long.strip(),  # D: description_long (legacy)
+                    source,                    # E: source
+                    link,                      # F: url
+                    extracted_at,              # G: extracted_at
+                    image_url,                 # H: image (legacy)
+                    "",                        # I: hero
+                    description_long.strip(),  # J: article_description
+                    "Live",                    # K: Live/Archived
+                    subtitle.strip(),          # L: article_subtitle
+                    image_url,                 # M: article_image
+                    raw_title                  # N: article_title
+                ]
+                recent_articles.append(row_data)
                 added_for_source += 1
 
     except Exception as e:
@@ -232,12 +219,11 @@ worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").works
 
 if recent_articles:
     existing_records = worksheet.get_all_values()
-    existing_urls = [row[5] for row in existing_records if len(row) > 5] # Column F (URL)
+    existing_urls = [row[5] for row in existing_records if len(row) > 5] # Column F
     
     new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
     
     if new_unique_articles:
-        # Insert at Row 2 so newest articles push older ones down
         worksheet.insert_rows(new_unique_articles, 2)
         print(f"Successfully inserted {len(new_unique_articles)} new unique articles at the top.")
     else:

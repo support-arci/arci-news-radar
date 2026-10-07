@@ -1,8 +1,6 @@
 name: News Scanner & Article Exporter
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       script_choice:
@@ -34,10 +32,9 @@ jobs:
       - name: Install dependencies
         run: pip install gspread feedparser beautifulsoup4 requests
 
-      # Runs news_radar.py if scheduled OR if "both" / "scanner_only" is selected
+      # Runs news_radar.py if "both" / "scanner_only" is selected
       - name: Run scanner
         if: |
-          github.event_name == 'schedule' || 
           github.event.inputs.script_choice == 'both' || 
           github.event.inputs.script_choice == 'scanner_only'
         env:
@@ -46,10 +43,9 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python news_radar.py
 
-      # Runs export_pending_articles.py if scheduled OR if "both" / "exporter_only" is selected
+      # Runs export_pending_articles.py if "both" / "exporter_only" is selected
       - name: Export pending articles for GPT
         if: |
-          github.event_name == 'schedule' || 
           github.event.inputs.script_choice == 'both' || 
           github.event.inputs.script_choice == 'exporter_only'
         env:
@@ -59,7 +55,6 @@ jobs:
       # Commits the JSON file if exporter ran
       - name: Commit and push pending_articles.json
         if: |
-          github.event_name == 'schedule' || 
           github.event.inputs.script_choice == 'both' || 
           github.event.inputs.script_choice == 'exporter_only'
         run: |

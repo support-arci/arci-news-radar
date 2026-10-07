@@ -20,7 +20,7 @@ headers = records[0]
 headers_lower = [h.strip().lower() for h in headers]
 
 # Ensure Column H (Image) exists
-if len(headers) < 8 or headers[7].lower() != "image":
+if len(headers) < 8 or headers_lower[7] != "image":
     worksheet.update_cell(1, 8, "image")
 
 # Ensure Column K (Live/Archived status) exists
@@ -36,7 +36,9 @@ MAX_LIVE_ARTICLES = 15
 # 3. Iterate over rows (starting from Row 2)
 for idx, row in enumerate(records[1:], start=2):
     title = row[1] if len(row) > 1 else ""
-    url = row[4] if len(row) > 4 else ""
+    url = row[5] if len(row) > 5 else "" # Fix: URL is actually Column F (index 5)
+    
+    # Safely get current status from Column K (index 10)
     current_status = row[10].strip() if len(row) > 10 else ""
     
     # Determine Status: Newest items at the top get 'Live', older push down to 'Archived'
@@ -52,7 +54,7 @@ for idx, row in enumerate(records[1:], start=2):
             'values': [[expected_status]]
         })
 
-    # Check for missing images to process
+    # Check for missing images to process (Column H, index 7)
     image = row[7] if len(row) > 7 else ""
     if not image.strip():
         pending_articles.append({
@@ -65,6 +67,8 @@ for idx, row in enumerate(records[1:], start=2):
 if updates:
     worksheet.batch_update(updates)
     print(f"Updated {len(updates)} articles with Live/Archived statuses.")
+else:
+    print("All article statuses are already up to date.")
 
 print(f"Found {len(pending_articles)} pending article(s) to process images.")
 

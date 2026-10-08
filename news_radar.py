@@ -30,12 +30,10 @@ RSS_FEEDS = {
     "Research Professional News": "https://www.researchprofessionalnews.com/feed/"
 }
 
-# Look back 72 hours
 cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
-# Limits articles per source to 5
 MAX_ARTICLES_PER_SOURCE = 5
 
 def clean_text(raw_html):
@@ -74,7 +72,6 @@ def get_article_details(url, entry, source_name):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
 
-            # Image
             if not image_url or "fenews" in url.lower():
                 og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
                 if og_image and og_image.get("content") and "default" not in og_image["content"].lower():
@@ -83,7 +80,6 @@ def get_article_details(url, entry, source_name):
             if image_url:
                 image_url = urljoin(url, image_url)
 
-            # Subtitle
             subtitle_selectors = [
                 ".field--name-field-summary", ".field--name-field-subtitle",
                 ".subtitle", ".sub-title", ".dek", ".article-subtitle", 
@@ -102,7 +98,6 @@ def get_article_details(url, entry, source_name):
                 if og_desc and og_desc.get("content"):
                     subtitle = og_desc["content"].strip()
 
-            # Main Body
             possible_containers = (
                 soup.find_all(['article', 'main']) + 
                 soup.find_all('div', class_=lambda c: c and any(sub in str(c).lower() for sub in [
@@ -141,7 +136,6 @@ def get_article_details(url, entry, source_name):
     except Exception as e:
         print(f"Scrape notice for {url}: {e}")
 
-    # Fallbacks
     if not subtitle or len(subtitle) < 10:
         rss_summary = clean_text(entry.get("summary", "") or entry.get("description", ""))
         if rss_summary:
@@ -186,6 +180,7 @@ for source, feed_url in RSS_FEEDS.items():
             raw_title = article.get("title", "").strip()
 
             if description_long and raw_title:
+                # MAP STRICTLY TO A-N (14 Columns). Manual columns are explicitly left BLANK ("")
                 row_data = [
                     published.isoformat(),     # A: published
                     raw_title,                 # B: title
@@ -196,11 +191,11 @@ for source, feed_url in RSS_FEEDS.items():
                     extracted_at,              # G: extracted_at
                     image_url,                 # H: image
                     "",                        # I: hero
-                    description_long.strip(),  # J: article_description
+                    "",                        # J: article_description (BLANK for user update)
                     "Live",                    # K: Live/Archived
-                    subtitle.strip(),          # L: article_subtitle
-                    image_url,                 # M: article_image
-                    raw_title                  # N: article_title
+                    "",                        # L: article_subtitle (BLANK for user update)
+                    "",                        # M: article_image (BLANK for user update)
+                    ""                         # N: article_title (BLANK for user update)
                 ]
                 recent_articles.append(row_data)
                 added_for_source += 1
@@ -227,8 +222,8 @@ if new_unique_articles:
     combined = new_unique_articles + existing_rows
     combined = combined[:60]
     
-    # Write back to A2:N range without touching side columns!
+    # Write back to A2:N range without touching side columns
     worksheet.update(range_name="A2", values=combined)
-    print(f"Successfully updated A2:N with {len(new_unique_articles)} new articles. Side columns remained untouched.")
+    print(f"Successfully updated A2:N with {len(new_unique_articles)} new articles.")
 else:
     print("No new unique articles to upload.")

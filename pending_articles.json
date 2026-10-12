@@ -1,137 +1,247 @@
 [
   {
+    "rowIndex": 4,
+    "title": "Why Emerging Leaders Must Be at the Decision Table During Organizational Change",
+    "url": "https://wonkhe.com/blogs/during-times-of-transformation-emerging-leaders-need-to-be-inside-the-leadership-tent"
+  },
+  {
+    "rowIndex": 5,
+    "title": "Are British University Degrees Worth It? Understanding the UK Higher Education Value Gap",
+    "url": "https://wonkhe.com/blogs/britain-likes-its-universities-but-not-its-degrees"
+  },
+  {
+    "rowIndex": 6,
+    "title": "How to Restructure Graduate Programs to Ensure Student Success",
+    "url": "https://www.insidehighered.com/opinion/letters/2026/10/11/re-evaluate-graduate-program-structure"
+  },
+  {
+    "rowIndex": 7,
+    "title": "The Hidden Cost of University Offer Cancellations for Students",
+    "url": "https://wonkhe.com/blogs/who-pays-the-price-when-universities-cancel-offers-to-protect-refusal-rates"
+  },
+  {
+    "rowIndex": 8,
+    "title": "US Probes 9 Universities Following Allegations of Student Visa Fraud",
+    "url": "https://www.highereddive.com/news/trump-administration-investigates-9-universities-over-visa-fraud-claims/832666/"
+  },
+  {
+    "rowIndex": 9,
+    "title": "How Colleges Can Retain Women of Color in Admissions Roles",
+    "url": "https://www.highereddive.com/news/why-women-of-color-leave-admissions-work-and-what-institutions-can-do/832629/"
+  },
+  {
+    "rowIndex": 10,
+    "title": "Who Is Behind Rising College Campus Shooting Incidents?",
+    "url": "https://www.theeduledger.com/institutions/article/15837151/campus-gun-violence-is-risingand-most-shooters-are-outsiders"
+  },
+  {
+    "rowIndex": 11,
+    "title": "How Flashpoint's New Patent Predicts Ransomware Attacks by Mapping Vulnerabilities",
+    "url": "https://campustechnology.com/articles/2026/10/09/flashpoint-patents-ransomware-risk-model-tying-vulnerabilites-to-likelihood-of-attack.aspx"
+  },
+  {
+    "rowIndex": 12,
+    "title": "How AI and Quantum Threats Are Reshaping the Future of Cybersecurity",
+    "url": "https://campustechnology.com/articles/2026/10/09/report-convergence-of-ai-quantum-risks-impacting-cybersecurity.aspx"
+  },
+  {
+    "rowIndex": 13,
+    "title": "US Investigates University J-1 Visas and Halts Corporate Green Cards",
+    "url": "https://thepienews.com/us-probes-nine-unis-over-j-1-visas-and-suspends-firms-green-card-pathway/"
+  },
+  {
+    "rowIndex": 14,
+    "title": "US Fast-Tracks Appeal on Blocked International Student Visa Limits",
+    "url": "https://thepienews.com/us-to-seek-expedited-appeal-over-blocked-intl-student-time-limits/"
+  },
+  {
+    "rowIndex": 15,
+    "title": "How College Benefits Latino Men Beyond Earning a Degree",
+    "url": "https://www.theeduledger.com/students/article/15836107/understanding-latino-male-students-value-of-higher-education-to-increase-their-degree-and-certificate-attainment-and-socioeconomic-mobility"
+  },
+  {
+    "rowIndex": 16,
+    "title": "How STEM-Focused Universities Help Liberal Arts Succeed",
+    "url": "https://www.theeduledger.com/views/article/15837099/built-for-this-moment-the-liberal-arts-at-technological-universities-might-just-offer-a-model-for-reforming-higher-ed"
+  },
+  {
+    "rowIndex": 17,
+    "title": "Who Is Addrain Conyers? Profile, Career, and Key Achievements",
+    "url": "https://www.theeduledger.com/on-the-move/article/15837096/addrain-conyers"
+  },
+  {
+    "rowIndex": 18,
+    "title": "How East Midlands Regional Growth Is Being Driven by Local University Success",
+    "url": "https://www.fenews.co.uk/higher-education/university-recognised-for-driving-growth-across-east-midlands-national-report-finds/"
+  },
+  {
+    "rowIndex": 19,
+    "title": "Court Dismisses Purdue Ex-Diversity Officer's Discrimination Lawsuit",
+    "url": "https://www.highereddive.com/news/judge-tosses-purdue-former-diversity-chief-race-bias-and-retaliation-claim/832109/"
+  },
+  {
+    "rowIndex": 20,
+    "title": "How Higher Education Must Evolve to Meet Shifting Student Preferences",
+    "url": "https://thepienews.com/students-are-keeping-their-options-open-is-the-sector-keeping-up/"
+  },
+  {
+    "rowIndex": 21,
+    "title": "Who Misses Out on the Return of Erasmus+ Exchange Program?",
+    "url": "https://wonkhe.com/blogs/erasmus-is-back-but-who-gets-left-behind"
+  },
+  {
+    "rowIndex": 22,
+    "title": "3 Charged in $20 Million Fraud Case Behind Closed Ohio College",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/09/3-indicted-stealing-20m-ohio-community-college"
+  },
+  {
+    "rowIndex": 23,
+    "title": "Over 1,000 Colleges Fail to Report Essential Student Success Data",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/09/21-colleges-failed-fully-submit-student-outcomes-data"
+  },
+  {
+    "rowIndex": 24,
+    "title": "Campus Sexual Assault Prevention Laws: What Higher Ed Institutions Are Legally Obligated to Do",
+    "url": "https://www.insidehighered.com/news/students/safety/2026/10/09/what-does-law-require-colleges-prevent-sexual-assault"
+  },
+  {
     "rowIndex": 25,
+    "title": "Is Going Back to College Worth It? The Real ROI of Adult Education",
+    "url": "https://www.insidehighered.com/news/student-success/life-after-college/2026/10/09/uneven-payoff-returning-college"
+  },
+  {
+    "rowIndex": 26,
+    "title": "Why Choosing an Affordable State College Over Your Dream School Still Stings",
+    "url": "https://hechingerreport.org/student-voice-i-turned-down-my-dream-college-for-a-far-more-affordable-state-school-it-still-hurts/"
+  },
+  {
+    "rowIndex": 27,
     "title": "How CU Denver's AI Hub is Empowering Campus with Artificial Intelligence",
     "url": "https://www.opencampus.org/2026/10/07/cu-denvers-ai-hub-aims-to-teach-students-and-faculty-about-the-technology/"
   },
   {
-    "rowIndex": 26,
+    "rowIndex": 28,
     "title": "Why Procurement Success Depends on Seamless Team Collaboration",
     "url": "https://wonkhe.com/blogs/procurement-is-a-collaboration-question-too"
   },
   {
-    "rowIndex": 27,
+    "rowIndex": 29,
     "title": "Exploring the Iconic Rajabai Clock Tower at University of Mumbai",
     "url": "https://wonkhe.com/blogs/higher-education-postcard-rajabai-clock-tower-university-of-mumbai"
   },
   {
-    "rowIndex": 28,
+    "rowIndex": 30,
     "title": "Stockton University Facing Strong Union Opposition Over Proposed Job Cuts",
     "url": "https://www.highereddive.com/news/stockton-university-plans-21-faculty-and-staff-layoffs-sparking-union-back/832554/"
   },
   {
-    "rowIndex": 29,
+    "rowIndex": 31,
     "title": "Court Rules Against DOJ On In-State Tuition Access For Undocumented Students",
     "url": "https://www.highereddive.com/news/doj-suffers-court-loss-over-in-state-tuition-for-undocumented-students/832567/"
   },
   {
-    "rowIndex": 30,
+    "rowIndex": 32,
     "title": "Navigating Academic Integrity and AI: Insights From the Conservative Conference",
     "url": "https://wonkhe.com/blogs/podcast-academic-integrity-and-ai-conservative-conference"
   },
   {
-    "rowIndex": 31,
+    "rowIndex": 33,
     "title": "Lincoln University Underfunding Lawsuit: The $548.7M Legal Battle Explained",
     "url": "https://www.theeduledger.com/institutions/article/15837072/lawsuit-seeks-5487-million-for-alleged-lincoln-university-funding-shortfall"
   },
   {
-    "rowIndex": 32,
+    "rowIndex": 34,
     "title": "Get Instant Free Job Notifications and Stay Ahead Today",
     "url": "https://www.theeduledger.com/recap-newsletter-only/article/15837067/sign-up-for-free-job-alerts-today"
   },
   {
-    "rowIndex": 33,
+    "rowIndex": 35,
     "title": "Who Won the 2026 Nobel Prize in Literature? Innovative Professor Takes Top Honor",
     "url": "https://www.insidehighered.com/news/quick-takes/2026/10/08/bold-inventive-professor-wins-nobel-prize-literature"
   },
   {
-    "rowIndex": 34,
+    "rowIndex": 36,
     "title": "3 Essential Questions Every University Must Answer Today",
     "url": "https://www.theeduledger.com/opinion/article/15836958/the-third-question-every-college-must-answer"
   },
   {
-    "rowIndex": 35,
+    "rowIndex": 37,
     "title": "How Claude Sonnet 5.5 Enhances Cybersecurity with Smart Model-Switching Features",
     "url": "https://campustechnology.com/articles/2026/10/08/claude-sonnet-5-5-offers-model-switching-cybersecurity-safeguards.aspx"
   },
   {
-    "rowIndex": 36,
+    "rowIndex": 38,
     "title": "Empowering Students: How Celebrating Cultural Identity Drives Academic Achievement",
     "url": "https://www.theeduledger.com/students/article/15836106/turning-cultural-pride-into-student-success"
   },
   {
-    "rowIndex": 37,
+    "rowIndex": 39,
     "title": "Inside the Major Shift Facing Vancouver's Language School Sector",
     "url": "https://thepienews.com/vancouvers-language-school-sector-faces-a-new-reality/"
   },
   {
-    "rowIndex": 38,
+    "rowIndex": 40,
     "title": "Who Is Calvin White Jr.? Biography, Career, and Key Achievements",
     "url": "https://www.theeduledger.com/on-the-move/article/15836803/calvin-white-jr"
   },
   {
-    "rowIndex": 39,
+    "rowIndex": 41,
     "title": "How Universities Can Better Support Low-Income Students and Boost Access",
     "url": "https://www.fenews.co.uk/fe-voices/universities-urged-to-double-down-on-access-and-support-for-poorest-students/"
   },
   {
-    "rowIndex": 40,
+    "rowIndex": 42,
     "title": "Why US Higher Ed Groups Are Suing ICE Over New Foreign Student Internship Rules",
     "url": "https://thepienews.com/us-associations-sue-over-ice-changes-to-international-student-internships/"
   },
   {
-    "rowIndex": 41,
+    "rowIndex": 43,
     "title": "Building AI-Ready Careers: Arden University Partners with Google Cloud",
     "url": "https://www.fenews.co.uk/education/arden-university-and-google-cloud-form-strategic-partnership-to-ensure-development-of-job-ready-ai-native-graduates/"
   },
   {
-    "rowIndex": 42,
+    "rowIndex": 44,
     "title": "How Crocodile Cancer Immunity Could Help Save Human Lives",
     "url": "https://www.fenews.co.uk/higher-education/why-crocs-are-resistant-to-cancer-public-lecture-to-explore-how-some-of-worlds-most-fearsome-creatures-could-save-human-lives/"
   },
   {
-    "rowIndex": 43,
+    "rowIndex": 45,
     "title": "How the University of Salford Drives Higher Education Innovation and Strategic Partnerships",
     "url": "https://www.fenews.co.uk/higher-education/university-of-salford-strengthens-position-as-a-leader-in-innovation-and-collaboration/"
   },
   {
-    "rowIndex": 44,
+    "rowIndex": 46,
     "title": "Could 3-Year College Degrees Solve the Teacher Shortage?",
     "url": "https://www.highereddive.com/news/can-3-year-degrees-boost-the-teacher-pipeline/832113/"
   },
   {
-    "rowIndex": 45,
+    "rowIndex": 47,
     "title": "Rising Pushback as Trump Moves to Cut $70 Million from Global Education Aid",
     "url": "https://thepienews.com/trump-targets-70m-in-international-education-funding-as-opposition-grows/"
   },
   {
-    "rowIndex": 46,
+    "rowIndex": 48,
     "title": "Protecting Anonymous Victims: Who Fights for Every Jane Doe?",
     "url": "https://www.insidehighered.com/opinion/columns/editors-note/2026/10/08/who-will-stand-all-jane-does"
   },
   {
-    "rowIndex": 47,
+    "rowIndex": 49,
     "title": "Hidden Truths About Student Mental Health: What You Need to Know",
     "url": "https://www.insidehighered.com/news/student-success/health-wellness/2026/10/08/what-are-we-missing-about-student-mental-health"
   },
   {
-    "rowIndex": 48,
+    "rowIndex": 50,
     "title": "Trump Considers $70,000 Fee on Foreign Student Work Visas",
     "url": "https://www.insidehighered.com/news/global/international-students-us/2026/10/08/trump-admin-expects-institutions-pay-70k-opt-fee"
   },
   {
-    "rowIndex": 49,
+    "rowIndex": 51,
     "title": "Beyond Access: How to Measure the True Success of Workforce Pell Grants",
     "url": "https://www.insidehighered.com/opinion/columns/beyond-transfer/2026/10/08/workforce-pell-promises-stackable-portable-credentials"
   },
   {
-    "rowIndex": 50,
+    "rowIndex": 52,
     "title": "BSC Education Shuts Down: Major Training Provider Enters Liquidation and Ceases Trading",
     "url": "https://thepienews.com/bsc-education-enters-liquidation-ceases-trading/"
-  },
-  {
-    "rowIndex": 60,
-    "title": "How Jo Johnson Believes Student Empowerment Can Transform Higher Education",
-    "url": "https://www.theeduledger.com/on-the-move/article/15836826/jennifer-l-cumpston"
   }
 ]

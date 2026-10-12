@@ -1,6 +1,5 @@
 import os
 import json
-import re
 import gspread
 from google import genai
 from google.genai import types
@@ -97,16 +96,15 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
 """
 
         try:
-            # Generate content using Gemini 2.5 Flash
-            # Replace 'gemini-2.5-flash' with 'gemini-3.8-flash':
-response = client.models.generate_content(
-    model='gemini-3.8-flash',
-    contents=prompt,
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        temperature=0.3
-    )
-)
+            # Generate content using Gemini 3.8 Flash
+            response = client.models.generate_content(
+                model='gemini-3.8-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.3
+                )
+            )
 
             res_json = json.loads(response.text)
             

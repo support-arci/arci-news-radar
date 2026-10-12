@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import gspread
 from google import genai
 from google.genai import types
@@ -95,19 +96,33 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
 }}
 """
 
-        try:
-            # Generate content using Gemini 3.8 Flash
-            response = client.models.generate_content(
-                model='gemini-3.8-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.3
+        res_json = None
+        max_retries = 3
+        
+        # Retry loop for handling transient 503 capacity spikes
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-3.8-flash',
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.3
+                    )
                 )
-            )
+                res_json = json.loads(response.text)
+                break
+            except Exception as e:
+                err_msg = str(e)
+                if ("503" in err_msg or "UNAVAILABLE" in err_msg or "overloaded" in err_msg) and attempt < max_retries - 1:
+                    wait_sec = (attempt + 1) * 5
+                    print(f"  ⚠️ High server demand (503). Retrying in {wait_sec}s (Attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait_sec)
+                else:
+                    print(f"✗ Gemini generation error for Row {row_num}: {e}")
+                    break
 
-            res_json = json.loads(response.text)
-            
+        if res_json:
             gen_title    = article_title or res_json.get("article_title", raw_title)
             gen_sub      = article_subtitle or res_json.get("article_subtitle", raw_subtitle)
             gen_desc     = res_json.get("article_description", "")
@@ -128,9 +143,6 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
                 batch_updates.append({'range': f'N{row_num}', 'values': [[gen_title]]})
 
             print(f"✓ Generated 15-16 sentence article for Row {row_num} (Category: {cat})")
-
-        except Exception as e:
-            print(f"✗ Gemini generation error for Row {row_num}: {e}")
 
 # ---------------------------------------------------------------------------
 # WRITE BACK TO GOOGLE SHEETS

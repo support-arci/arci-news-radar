@@ -1,102 +1,62 @@
 [
   {
-    "rowIndex": 25,
+    "rowIndex": 33,
+    "title": "Treasury Fiscal Squeeze and Defense Priorities Darken University Funding Outlook",
+    "url": "https://wonkhe.com/blogs/john-healeys-quest-to-build-a-more-resilient-economy-could-further-squeeze-a-struggling-university-sector"
+  },
+  {
+    "rowIndex": 34,
+    "title": "How University Admissions Policies Contradict Equity and Diversity Objectives",
+    "url": "https://wonkhe.com/blogs/how-equitable-are-university-admissions-policies"
+  },
+  {
+    "rowIndex": 35,
+    "title": "Flawed GDP Metrics Misrepresent University Research Impact, Sector Analysts Warn",
+    "url": "https://wonkhe.com/blogs/science-and-university-research-cant-deliver-economic-growth-at-least-not-as-we-measure-it"
+  },
+  {
+    "rowIndex": 51,
+    "title": "Is Campus Free Speech Endangered? Most College Students Believe So, New Survey Finds",
+    "url": "https://www.insidehighered.com/news/students/free-speech/2026/10/14/survey-most-college-students-say-free-speech-threatened"
+  },
+  {
+    "rowIndex": 52,
+    "title": "How 5 Higher Ed Institutions Are Shaping the Future of College Accreditation",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/14/5-independent-colleges-sign-new-accreditor"
+  },
+  {
+    "rowIndex": 53,
+    "title": "Who is Driving the AI Revolution in Elementary and High School Classrooms?",
+    "url": "https://edsurge.com/news/who-is-building-the-ai-foundation-for-k-12-classrooms"
+  },
+  {
+    "rowIndex": 54,
+    "title": "Overcoming Screen Time Struggles: A Teacher and Student's Journey with Tech Dependency",
+    "url": "https://edsurge.com/news/tech-addiction-was-a-problem-for-my-student-and-myself"
+  },
+  {
+    "rowIndex": 55,
+    "title": "Research Reveals Link Between CPS Involvement and Increased School Absenteeism",
+    "url": "https://edsurge.com/news/child-protective-services-contact-linked-to-higher-absenteeism-study-finds"
+  },
+  {
+    "rowIndex": 56,
     "title": "The Civic University's Geography Problem: How Satellite Campuses Are Sidelined in Regional Policy",
     "url": "https://wonkhe.com/blogs/the-civic-university-agenda-has-a-geography-problem"
   },
   {
-    "rowIndex": 26,
+    "rowIndex": 57,
     "title": "Why Higher Ed Is Failing Senior Researchers (And How to Fix It)",
     "url": "https://wonkhe.com/blogs/universities-are-overlooking-their-established-researchers"
   },
   {
-    "rowIndex": 27,
+    "rowIndex": 58,
     "title": "Bridging the SEND Divide: English Universities Navigate Record Disability Disclosures Amid Regulatory Disconnect",
     "url": "https://wonkhe.com/blogs/educational-needs-is-a-higher-education-issue"
   },
   {
-    "rowIndex": 30,
+    "rowIndex": 61,
     "title": "How Cybercriminals Use AI Email Assistants and Remote Software in Phishing Scams",
     "url": "https://campustechnology.com/articles/2026/10/13/phishing-attacks-increasingly-exploit-remote-management-tools-and-ai-email-assistants.aspx"
-  },
-  {
-    "rowIndex": 35,
-    "title": "Tragic Death of Pakistani Graduate Exposes Massive US Study Visa Fraud Scheme",
-    "url": "https://thepienews.com/pakistani-graduates-death-puts-alleged-us-study-fraud-in-national-spotlight/"
-  },
-  {
-    "rowIndex": 36,
-    "title": "Who Is Maya T. Mapp? Profile, Career, and Key Achievements",
-    "url": "https://www.theeduledger.com/on-the-move/article/15837200/maya-t-mapp"
-  },
-  {
-    "rowIndex": 37,
-    "title": "How Australia’s Education Policies Are Impacting International Students and Skills Growth",
-    "url": "https://thepienews.com/iteca-warns-australian-policy-is-choking-international-education-and-skills-pipeline/"
-  },
-  {
-    "rowIndex": 38,
-    "title": "How Political Views Are Shaping College Choices for Modern Students",
-    "url": "https://www.highereddive.com/news/more-students-are-ruling-out-colleges-based-on-politics-poll-finds/832778/"
-  },
-  {
-    "rowIndex": 39,
-    "title": "PIE Live Ireland: Real-Time International Education News & Key Insights",
-    "url": "https://thepienews.com/the-pie-live-ireland-live-feed/"
-  },
-  {
-    "rowIndex": 40,
-    "title": "How State Politics Are Now Influencing Where Students Go to College",
-    "url": "https://www.insidehighered.com/news/students/diversity/2026/10/13/political-considerations-increasingly-shape-college-decision"
-  },
-  {
-    "rowIndex": 41,
-    "title": "Why AAUP Is Moving Forward with Political Endorsements Amid Controversy",
-    "url": "https://www.insidehighered.com/news/government/politics-elections/2026/10/13/aaup-forges-ahead-endorsements"
-  },
-  {
-    "rowIndex": 42,
-    "title": "Two US Scholars Awarded Prestigious Nobel Prize in Economic Sciences",
-    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/13/2-americans-win-nobel-prize-economics"
-  },
-  {
-    "rowIndex": 43,
-    "title": "Impact of Census Policy Updates on Native American Education",
-    "url": "https://www.insidehighered.com/news/government/politics-elections/2026/10/13/proposed-changes-census-could-affect-native-students"
-  },
-  {
-    "rowIndex": 44,
-    "title": "Top College Priorities: What Truly Matters to Students Today?",
-    "url": "https://www.insidehighered.com/news/student-success/college-experience/2026/10/13/what-students-value-most-about-college"
-  },
-  {
-    "rowIndex": 45,
-    "title": "Why Higher Ed Leaders Must Evaluate Legal Realities Before Abandoning Diversity Programs",
-    "url": "https://hechingerreport.org/opinion-no-college-president-provost-or-board-should-retreat-from-diversity-initiatives-without-considering-what-the-law-actually-requires/"
-  },
-  {
-    "rowIndex": 46,
-    "title": "Why College Enrollment Remains High Despite Doubts About Higher Education Degree Value",
-    "url": "https://hechingerreport.org/proof-points-college-enrollment/"
-  },
-  {
-    "rowIndex": 47,
-    "title": "Dismantling the Welcome Week Fallacy: Universities Urged to Replace Fragmented Onboarding With Cross-Sector Transition Ecosystems",
-    "url": "https://wonkhe.com/blogs/student-transition-into-university-shouldnt-be-a-handover"
-  },
-  {
-    "rowIndex": 48,
-    "title": "Widening Access Practitioners Champion Bespoke Accreditation to Formalize Equity Expertise in Higher Education",
-    "url": "https://wonkhe.com/blogs/creating-a-space-and-a-voice-for-widening-participation-professional-practice"
-  },
-  {
-    "rowIndex": 50,
-    "title": "Ministers Face Backlash Over Exclusion of Universities from Hillsborough Law Candour Duty",
-    "url": "https://wonkhe.com/blogs/ministers-dodge-the-question-of-candour-in-universities"
-  },
-  {
-    "rowIndex": 61,
-    "title": "How Ireland Is Boosting Its Global Appeal With the TrustEd Framework and Visa Updates",
-    "url": "https://thepienews.com/trusted-framework-and-consistent-visa-process-should-enhance-irelands-position/"
   }
 ]

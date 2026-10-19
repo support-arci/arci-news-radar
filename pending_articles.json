@@ -1,62 +1,122 @@
 [
   {
-    "rowIndex": 33,
+    "rowIndex": 23,
+    "title": "Rethinking Graduate Outcomes: Policy Experts Urge Shift from Immediate Metrics to Lifelong Employability",
+    "url": "https://wonkhe.com/blogs/what-counts-as-a-graduate-outcome-when-the-labour-market-is-changing"
+  },
+  {
+    "rowIndex": 25,
+    "title": "Preserving Academic Sanctuary: How the Warburg Institute's Historic Rescue Shapes Modern Higher Ed Governance",
+    "url": "https://wonkhe.com/blogs/higher-education-postcard-the-warburg-institute"
+  },
+  {
+    "rowIndex": 26,
+    "title": "UK Universities Face Dual Pressure as Innovation Mandates Clash with Institutional Governance Realities",
+    "url": "https://wonkhe.com/blogs/podcast-innovation-nation-emerging-leaders-graduate-recruitment"
+  },
+  {
+    "rowIndex": 36,
+    "title": "College Alternatives: Best Career Paths and Options Beyond a Degree",
+    "url": "https://wonkhe.com/blogs/if-not-university-then-what"
+  },
+  {
+    "rowIndex": 37,
+    "title": "Everything You Need to Know About Bishane Whitmore",
+    "url": "https://www.theeduledger.com/on-the-move/article/15837527/bishane-whitmore"
+  },
+  {
+    "rowIndex": 38,
+    "title": "Minnesota State Redirects Community College Funding to Support Struggling Universities",
+    "url": "https://www.opencampus.org/2026/10/15/tough-medicine-minnesota-state-approves-plan-to-use-community-college-funds-to-help-struggling-universities/"
+  },
+  {
+    "rowIndex": 39,
+    "title": "Australia Higher Education Reports 5% Decline in International Student Enrollment",
+    "url": "https://thepienews.com/overseas-student-commencements-fall-5-in-australian-higher-education/"
+  },
+  {
+    "rowIndex": 40,
+    "title": "Transforming Study Abroad Opportunities for Nursing Students in Japan",
+    "url": "https://thepienews.com/small-steps-bigger-possibilities-rethinking-study-abroad-for-japanese-nursing-students/"
+  },
+  {
+    "rowIndex": 41,
+    "title": "Global University Graduates Inject $1.7 Trillion into Host Country Economies",
+    "url": "https://thepienews.com/international-graduates-deliver-1-7tn-lifetime-boost-to-host-economies/"
+  },
+  {
+    "rowIndex": 42,
+    "title": "Strategic Tactics University Admissions Teams Are Using for the Coming Year",
+    "url": "https://www.highereddive.com/news/how-admissions-officials-are-navigating-the-academic-year-ahead/833007/"
+  },
+  {
+    "rowIndex": 43,
+    "title": "What College Graduates Need to Know About the New Earnings Test Impact",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/15/new-earnings-test-will-have-limited-concentrated-impact"
+  },
+  {
+    "rowIndex": 44,
+    "title": "Why Lawmakers Are Blasting the Transfer of Minority-Serving Institution Funds",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/15/congressional-democrats-condemn-msi-funding-transfer"
+  },
+  {
+    "rowIndex": 45,
+    "title": "How Higher Ed Institutions Are Reinventing Essential Student Support Systems",
+    "url": "https://www.insidehighered.com/news/student-success/health-wellness/2026/10/15/rebuilding-student-safety-net"
+  },
+  {
+    "rowIndex": 46,
+    "title": "Understanding the Growing Attacks on Immigrant Rights: A Legal Expert Speaks Out",
+    "url": "https://www.insidehighered.com/news/government/courts/2026/10/15/legal-advocate-decries-coordinated-assault-noncitizens"
+  },
+  {
+    "rowIndex": 47,
+    "title": "Why Top Higher Ed Institutions Are Urgently Hiring AI Ethics Experts",
+    "url": "https://www.insidehighered.com/news/faculty/2026/10/15/universities-have-gone-ai-philosopher-hiring-spree"
+  },
+  {
+    "rowIndex": 48,
+    "title": "The Future of High-Impact Tutoring After Federal Relief Funds Expire",
+    "url": "https://edsurge.com/news/can-high-impact-tutoring-survive-post-pandemic-funding-loss"
+  },
+  {
+    "rowIndex": 49,
+    "title": "Arlington Voting Access Concerns Rise Over Missing UTA Campus Polling Site",
+    "url": "https://www.opencampus.org/2026/10/14/uta-polling-sites-absence-raises-voting-access-concerns-in-central-arlington/"
+  },
+  {
+    "rowIndex": 50,
+    "title": "CUNY Community College Students Face Urgent Delays in Financial Aid Funding",
+    "url": "https://www.opencampus.org/2026/10/14/scholarship-delays-hit-recently-expanded-cuny-community-college-program/"
+  },
+  {
+    "rowIndex": 51,
+    "title": "NC Student Voter Guide: Why Most Community College IDs Fail Identification Rules",
+    "url": "https://www.opencampus.org/2026/10/14/most-n-c-community-college-student-ids-are-not-approved-for-voting-in-midterms/"
+  },
+  {
+    "rowIndex": 52,
+    "title": "The Hidden Risks of Tech Bootcamps Partnered with Major Universities",
+    "url": "https://hechingerreport.org/a-university-branded-boot-camp-promised-tech-jobs-it-delivered-only-debt/"
+  },
+  {
+    "rowIndex": 53,
+    "title": "Are Higher Ed Administrative Job Cuts Actually Good for Universities?",
+    "url": "https://hechingerreport.org/colleges-are-cutting-administrative-jobs-and-critics-say-thats-a-good-thing/"
+  },
+  {
+    "rowIndex": 54,
     "title": "Treasury Fiscal Squeeze and Defense Priorities Darken University Funding Outlook",
     "url": "https://wonkhe.com/blogs/john-healeys-quest-to-build-a-more-resilient-economy-could-further-squeeze-a-struggling-university-sector"
   },
   {
-    "rowIndex": 34,
+    "rowIndex": 55,
     "title": "How University Admissions Policies Contradict Equity and Diversity Objectives",
     "url": "https://wonkhe.com/blogs/how-equitable-are-university-admissions-policies"
   },
   {
-    "rowIndex": 35,
+    "rowIndex": 56,
     "title": "Flawed GDP Metrics Misrepresent University Research Impact, Sector Analysts Warn",
     "url": "https://wonkhe.com/blogs/science-and-university-research-cant-deliver-economic-growth-at-least-not-as-we-measure-it"
-  },
-  {
-    "rowIndex": 51,
-    "title": "Is Campus Free Speech Endangered? Most College Students Believe So, New Survey Finds",
-    "url": "https://www.insidehighered.com/news/students/free-speech/2026/10/14/survey-most-college-students-say-free-speech-threatened"
-  },
-  {
-    "rowIndex": 52,
-    "title": "How 5 Higher Ed Institutions Are Shaping the Future of College Accreditation",
-    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/14/5-independent-colleges-sign-new-accreditor"
-  },
-  {
-    "rowIndex": 53,
-    "title": "Who is Driving the AI Revolution in Elementary and High School Classrooms?",
-    "url": "https://edsurge.com/news/who-is-building-the-ai-foundation-for-k-12-classrooms"
-  },
-  {
-    "rowIndex": 54,
-    "title": "Overcoming Screen Time Struggles: A Teacher and Student's Journey with Tech Dependency",
-    "url": "https://edsurge.com/news/tech-addiction-was-a-problem-for-my-student-and-myself"
-  },
-  {
-    "rowIndex": 55,
-    "title": "Research Reveals Link Between CPS Involvement and Increased School Absenteeism",
-    "url": "https://edsurge.com/news/child-protective-services-contact-linked-to-higher-absenteeism-study-finds"
-  },
-  {
-    "rowIndex": 56,
-    "title": "The Civic University's Geography Problem: How Satellite Campuses Are Sidelined in Regional Policy",
-    "url": "https://wonkhe.com/blogs/the-civic-university-agenda-has-a-geography-problem"
-  },
-  {
-    "rowIndex": 57,
-    "title": "Why Higher Ed Is Failing Senior Researchers (And How to Fix It)",
-    "url": "https://wonkhe.com/blogs/universities-are-overlooking-their-established-researchers"
-  },
-  {
-    "rowIndex": 58,
-    "title": "Bridging the SEND Divide: English Universities Navigate Record Disability Disclosures Amid Regulatory Disconnect",
-    "url": "https://wonkhe.com/blogs/educational-needs-is-a-higher-education-issue"
-  },
-  {
-    "rowIndex": 61,
-    "title": "How Cybercriminals Use AI Email Assistants and Remote Software in Phishing Scams",
-    "url": "https://campustechnology.com/articles/2026/10/13/phishing-attacks-increasingly-exploit-remote-management-tools-and-ai-email-assistants.aspx"
   }
 ]

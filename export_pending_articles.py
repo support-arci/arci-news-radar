@@ -10,10 +10,10 @@ gc = gspread.service_account_from_dict(credentials)
 sheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI")
 worksheet = sheet.worksheet("AI Test")
 
-# 2. Fetch records specifically from Columns A through N
-records = worksheet.get_values("A1:N61")
+# 2. Fetch all records infinitely from Columns A through N
+records = worksheet.get("A1:N")
 
-if len(records) <= 1:
+if not records or len(records) <= 1:
     print("No articles found in sheet.")
     exit()
 
@@ -23,12 +23,12 @@ updates = []
 now_utc = datetime.now(timezone.utc)
 five_days_ago = now_utc - timedelta(days=5)
 
-# 3. Process Statuses Based on 5-Day Rule
+# 3. Process Statuses Based on 5-Day Rule for ALL rows
 for idx, row in enumerate(records[1:], start=2):
     date_str = row[0] if len(row) > 0 else ""
-    title = row[13] if len(row) > 13 else (row[1] if len(row) > 1 else "") # Prefers N, falls back to B
-    url = row[5] if len(row) > 5 else "" # URL is Column F
-    current_status = row[10].strip() if len(row) > 10 else "" # Column K
+    title = row[13] if len(row) > 13 else (row[1] if len(row) > 1 else "") 
+    url = row[5] if len(row) > 5 else "" 
+    current_status = row[10].strip() if len(row) > 10 else "" 
     
     if not title.strip():
         continue
@@ -50,7 +50,7 @@ for idx, row in enumerate(records[1:], start=2):
             'values': [[expected_status]]
         })
 
-    # Check for missing images (Column M, falling back to H)
+    # Check for missing images
     image = row[12] if len(row) > 12 else (row[7] if len(row) > 7 else "")
     if not image.strip():
         pending_articles.append({
@@ -62,13 +62,11 @@ for idx, row in enumerate(records[1:], start=2):
 # Batch update live/archived statuses in Column K
 if updates:
     worksheet.batch_update(updates)
-    print(f"Updated status for {len(updates)} article(s) in Column K.")
+    print(f"Updated status for {len(updates)} article(s) to Live/Archived.")
 else:
-    print("All article statuses in Column K are up to date.")
+    print("All article statuses are up to date.")
 
-print(f"Found {len(pending_articles)} pending article(s) needing image processing.")
-
-# 4. Save pending articles to JSON for GPT processing
+# 4. Save pending articles to JSON
 output_file = "pending_articles.json"
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(pending_articles, f, indent=2, ensure_ascii=False)

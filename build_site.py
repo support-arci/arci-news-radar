@@ -9,7 +9,7 @@ credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 gc = gspread.service_account_from_dict(credentials)
 worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
-records = worksheet.get_values("A2:N61")
+records = worksheet.get("A2:N")
 if not records:
     print("No records found to build static pages.")
     exit(0)
@@ -49,9 +49,8 @@ for idx, r in enumerate(records):
             "status": status
         })
 
-print(f"Building static pages for {len(articles)} articles...")
+print(f"Building static pages for {len(articles)} articles in infinite archive...")
 
-# 2. Build individual crawlable static pages under article/<slug>.html
 os.makedirs("article", exist_ok=True)
 
 ARTICLE_TEMPLATE = """<!DOCTYPE html>
@@ -61,11 +60,11 @@ ARTICLE_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{title} | The Higher Ed Times</title>
 <meta name="description" content="{meta_desc}" />
-<link rel="canonical" href="https://thehigheredtimes.com/article/{slug}.html" />
+<link rel="canonical" href="https://thehigheredtimes.com/#article/{slug}" />
 <meta property="og:title" content="{title}" />
 <meta property="og:description" content="{meta_desc}" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thehigheredtimes.com/article/{slug}.html" />
+<meta property="og:url" content="https://thehigheredtimes.com/#article/{slug}" />
 <meta property="og:image" content="{image}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -101,7 +100,7 @@ ARTICLE_TEMPLATE = """<!DOCTYPE html>
   </div>
 </header>
 <main class="wrap">
-  <a href="/" class="article-back">&larr; Back to Briefings</a>
+  <a href="/#article/{slug}" class="article-back">&larr; Read inside dashboard</a>
   <article>
     <h1>{title}</h1>
     {subtitle_html}
@@ -111,7 +110,7 @@ ARTICLE_TEMPLATE = """<!DOCTYPE html>
       {paragraphs_html}
     </div>
     <div class="source-card">
-      <strong>Editorial Sourcing & Methodology:</strong> This sector analysis was produced by The Higher Ed Times editorial desk analyzing verified data, institutional statements, and initial reporting from <em>{source}</em>.
+      <strong>Editorial Sourcing & Methodology:</strong> This sector analysis was produced by The Higher Ed Times analyzing verified data, institutional statements, and initial reporting from <em>{source}</em>.
     </div>
   </article>
 </main>
@@ -152,14 +151,14 @@ for art in articles:
 
 print(f"Generated {len(articles)} individual static article pages in /article/!")
 
-# 3. Bake static content and compliance links directly into index.html
+# 5. Bake static content into index.html
 if os.path.exists("index.html"):
     with open("index.html", "r", encoding="utf-8") as f:
         idx_content = f.read()
 
-    # Build crawlable static fallback list for the homepage
     crawlable_stories = []
-    for art in articles[:12]:
+    # Only put the top 15 in the index.html so it doesn't get too large
+    for art in articles[:15]:
         crawlable_stories.append(f"""
         <article style="margin-bottom: 24px; border-bottom: 1px solid #e2e6ee; padding-bottom: 16px;">
           <h3 style="font-family:'Source Serif 4',serif; font-size:18px; margin:0 0 6px;">
@@ -180,21 +179,9 @@ if os.path.exists("index.html"):
     </noscript>
     """
 
-    # Inject static block if not already present
     if "STATIC PRE-RENDERED BRIEFS" not in idx_content:
         idx_content = idx_content.replace('<main id="home-view">', '<main id="home-view">\n' + static_block)
 
-    # Ensure footer has direct, crawlable links to legal pages
-    compliance_footer_links = """
-    <p style="margin-top: 14px;">
-      <a href="/about.html" style="color:var(--muted); text-decoration:none; margin:0 8px; font-weight:600;">About</a> &bull;
-      <a href="/privacy.html" style="color:var(--muted); text-decoration:none; margin:0 8px; font-weight:600;">Privacy Policy</a> &bull;
-      <a href="/contact.html" style="color:var(--muted); text-decoration:none; margin:0 8px; font-weight:600;">Contact Us</a>
-    </p>
-    """
-    if "privacy.html" not in idx_content:
-        idx_content = idx_content.replace('Higher Ed Insights</p>', 'Higher Ed Insights</p>\n' + compliance_footer_links)
-
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(idx_content)
-    print("Updated index.html with crawlable noscript content and footer compliance links.")
+    print("Updated index.html with crawlable noscript content.")

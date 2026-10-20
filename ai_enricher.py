@@ -29,14 +29,10 @@ BACKUP_PHOTO_POOL = [
 ]
 
 def fetch_relevant_unique_image(query, used_urls):
-    """
-    Searches Unsplash CDN for photos matching 'query'.
-    Guarantees no two articles receive the same image.
-    """
     clean_query = query.strip().lower() if query else "higher education university"
     search_url = f"https://unsplash.com/napi/search/photos?query={quote_plus(clean_query)}&per_page=15"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
 
     try:
@@ -50,7 +46,6 @@ def fetch_relevant_unique_image(query, used_urls):
                     base_url = raw_url.split("?")[0]
                     formatted_url = f"{base_url}?q=80&w=800&auto=format&fit=crop"
                     
-                    # Ensure URL is completely unique
                     if formatted_url not in used_urls and base_url not in used_urls:
                         used_urls.add(formatted_url)
                         used_urls.add(base_url)
@@ -58,7 +53,6 @@ def fetch_relevant_unique_image(query, used_urls):
     except Exception as e:
         print(f"  ⚠️ Live image search notice for '{clean_query}': {e}")
 
-    # Fallback to unused item from backup pool if search yields duplicates
     for photo in BACKUP_PHOTO_POOL:
         base_photo = photo.split("?")[0]
         if photo not in used_urls and base_photo not in used_urls:
@@ -68,9 +62,6 @@ def fetch_relevant_unique_image(query, used_urls):
 
     return BACKUP_PHOTO_POOL[0]
 
-# ---------------------------------------------------------------------------
-# INITIALIZE GEMINI API & GOOGLE SHEETS
-# ---------------------------------------------------------------------------
 gemini_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 if not gemini_api_key:
     print("Error: GEMINI_API_KEY environment variable not set.")
@@ -82,12 +73,11 @@ credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 gc = gspread.service_account_from_dict(credentials)
 worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
-records = worksheet.get_values("A2:N61")
+records = worksheet.get("A2:N")
 if not records:
     print("No articles found in sheet.")
     exit(0)
 
-# Build set of image URLs already used in the sheet (Cols H and M)
 used_image_urls = set()
 for r in records:
     padded = r + [""] * (14 - len(r))
@@ -101,12 +91,8 @@ for r in records:
         used_image_urls.add(img_m.split("?")[0])
 
 batch_updates = []
-
 print(f"Loaded {len(records)} rows from Google Sheets. Checking for articles needing AI enrichment...")
 
-# ---------------------------------------------------------------------------
-# PROCESS ROWS
-# ---------------------------------------------------------------------------
 for i, row in enumerate(records):
     row_num = i + 2
     padded_row = row + [""] * (14 - len(row))
@@ -115,14 +101,12 @@ for i, row in enumerate(records):
     raw_title           = padded_row[1].strip()   # Col B
     raw_subtitle        = padded_row[2].strip()   # Col C
     description_long    = padded_row[3].strip()   # Col D
-    source              = padded_row[4].strip()   # Col E
     existing_image      = padded_row[7].strip()   # Col H
     article_description = padded_row[9].strip()   # Col J
     article_subtitle    = padded_row[11].strip()  # Col L
     article_image       = padded_row[12].strip()  # Col M
     article_title       = padded_row[13].strip()  # Col N
 
-    # Condition: Published MUST be filled, and article_description (Col J) MUST be empty
     if published and not article_description:
         print(f"\n[Processing Row {row_num}] {raw_title[:60]}...")
         
@@ -188,7 +172,6 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
             cat          = res_json.get("category", "campus").lower().strip()
             search_kw    = res_json.get("search_keywords") or cat
 
-            # Assign a relevant, unique image
             final_image = article_image or existing_image
             if not final_image or not final_image.startswith("http"):
                 final_image = fetch_relevant_unique_image(search_kw, used_image_urls)
@@ -196,7 +179,6 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
                 used_image_urls.add(final_image)
                 used_image_urls.add(final_image.split("?")[0])
 
-            # Queue Updates
             batch_updates.append({'range': f'J{row_num}', 'values': [[gen_desc]]})
             if not article_subtitle:
                 batch_updates.append({'range': f'L{row_num}', 'values': [[gen_sub]]})
@@ -207,9 +189,6 @@ OUTPUT FORMAT: Return ONLY a raw JSON object with these keys (no markdown format
 
             print(f"✓ Generated 15-16 sentence article for Row {row_num} (Category: {cat} | Image: {search_kw})")
 
-# ---------------------------------------------------------------------------
-# WRITE BACK TO GOOGLE SHEETS
-# ---------------------------------------------------------------------------
 if batch_updates:
     worksheet.batch_update(batch_updates)
     print(f"\nSuccessfully updated {len(batch_updates)} cell ranges in Google Sheets!")

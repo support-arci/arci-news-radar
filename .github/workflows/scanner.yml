@@ -41,7 +41,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python news_radar.py
 
-      # 2. Run AI Enricher (Gemini 2.5 Flash)
+      # 2. Run AI Enricher (Gemini 3.8 Flash)
       - name: Run AI Enricher
         if: |
           github.event.inputs.script_choice == 'both' || 
@@ -51,7 +51,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python ai_enricher.py
 
-      # 3. Export pending articles for UI / status sync
+      # 3. Export pending articles
       - name: Export pending articles
         if: |
           github.event.inputs.script_choice == 'both' || 
@@ -60,13 +60,16 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: python export_pending_articles.py
 
-      # 4. Commit and push updated JSON
-      - name: Commit and push pending_articles.json
-        if: |
-          github.event.inputs.script_choice == 'both' || 
-          github.event.inputs.script_choice == 'exporter_only'
+      # 4. Generate Static Pages & AdSense-Compliant HTML
+      - name: Build Static Site
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+        run: python build_site.py
+
+      # 5. Commit and push everything to GitHub Pages
+      - name: Commit and push static updates
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add pending_articles.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update pending_articles.json" && git push)
+          git add pending_articles.json index.html article/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-generate crawlable articles and static pages" && git push)

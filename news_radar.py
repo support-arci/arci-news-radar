@@ -34,7 +34,7 @@ cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
 extracted_at = datetime.now(timezone.utc).isoformat()
 recent_articles = []
 
-MAX_ARTICLES_PER_SOURCE = 5
+MAX_ARTICLES_PER_SOURCE = 3
 
 def clean_text(raw_html):
     if not raw_html:
@@ -180,7 +180,6 @@ for source, feed_url in RSS_FEEDS.items():
             raw_title = article.get("title", "").strip()
 
             if description_long and raw_title:
-                # MAP STRICTLY TO A-N (14 Columns). Manual columns are explicitly left BLANK ("")
                 row_data = [
                     published.isoformat(),     # A: published
                     raw_title,                 # B: title
@@ -191,11 +190,11 @@ for source, feed_url in RSS_FEEDS.items():
                     extracted_at,              # G: extracted_at
                     image_url,                 # H: image
                     "",                        # I: hero
-                    "",                        # J: article_description (BLANK for user update)
+                    "",                        # J: article_description (BLANK)
                     "Live",                    # K: Live/Archived
-                    "",                        # L: article_subtitle (BLANK for user update)
-                    "",                        # M: article_image (BLANK for user update)
-                    ""                         # N: article_title (BLANK for user update)
+                    "",                        # L: article_subtitle (BLANK)
+                    "",                        # M: article_image (BLANK)
+                    ""                         # N: article_title (BLANK)
                 ]
                 recent_articles.append(row_data)
                 added_for_source += 1
@@ -206,24 +205,30 @@ for source, feed_url in RSS_FEEDS.items():
 recent_articles.sort(key=lambda x: x[0], reverse=True)
 print(f"Total newly gathered articles: {len(recent_articles)}")
 
-# Upload to Google Sheets (Column Range A2:N61 ONLY)
+# Upload to Google Sheets (INFINITE LENGTH, COLUMNS A-N ONLY)
 credentials = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
 gc = gspread.service_account_from_dict(credentials)
 worksheet = gc.open_by_key("1E558JcLuLMyBqclmqrRhvlswMK9FS-NdJw_o3W1C7vI").worksheet("AI Test")
 
-# Fetch existing rows in Columns A to N ONLY so we don't shift side columns
-existing_rows = worksheet.get_values("A2:N61")
+# Fetch all existing rows in Columns A to N
+existing_rows = worksheet.get("A2:N")
+if not existing_rows:
+    existing_rows = []
+
 existing_urls = set(row[5] for row in existing_rows if len(row) > 5 and row[5].strip())
 
 new_unique_articles = [art for art in recent_articles if art[5] not in existing_urls]
 
 if new_unique_articles:
-    # Prepend new articles to existing rows and cap at 60
     combined = new_unique_articles + existing_rows
-    combined = combined[:60]
     
-    # Write back to A2:N range without touching side columns
-    worksheet.update(range_name="A2", values=combined)
-    print(f"Successfully updated A2:N with {len(new_unique_articles)} new articles.")
+    # Pad all rows to strictly 14 columns so gspread writes a perfect rectangle
+    combined_padded = []
+    for r in combined:
+        pad = r + [""] * (14 - len(r))
+        combined_padded.append(pad[:14])
+    
+    worksheet.update(values=combined_padded, range_name="A2")
+    print(f"Successfully updated A2:N with {len(new_unique_articles)} new articles. Total archive size: {len(combined_padded)}")
 else:
     print("No new unique articles to upload.")

@@ -1,161 +1,191 @@
 [
   {
-    "rowIndex": 6,
+    "rowIndex": 8,
+    "title": "Jaclyn Albin",
+    "url": "https://www.theeduledger.com/on-the-move/article/15836828/jaclyn-albin"
+  },
+  {
+    "rowIndex": 9,
+    "title": "Justice Department Drops Two Appeals Over Public Service Loan Forgiveness Restrictions",
+    "url": "https://www.theeduledger.com/latest-news/article/15975435/justice-department-drops-two-appeals-over-public-service-loan-forgiveness-restrictions"
+  },
+  {
+    "rowIndex": 11,
+    "title": "Deepfakes and the Future of AI: When Seeing Is No Longer Believing",
+    "url": "https://www.theeduledger.com/opinion/article/15975377/deepfakes-and-the-future-of-ai-when-seeing-is-no-longer-believing"
+  },
+  {
+    "rowIndex": 26,
+    "title": "UK Universities Confront Disability Support Deficits as Regulator Prepares Stricter Inclusion Standards",
+    "url": "https://wonkhe.com/blogs/meeting-expectations-on-disability-inclusion"
+  },
+  {
+    "rowIndex": 27,
+    "title": "OfS Tightens Grip on English Higher Education Quality with Hardline TEF Overhaul",
+    "url": "https://wonkhe.com/blogs/ofs-wants-to-intervene-more-strongly-on-quality-can-it-intervene-more-intelligently"
+  },
+  {
+    "rowIndex": 28,
+    "title": "Regulatory Paradox: How the Teaching Excellence Framework Silences Student Voice and Compounds Campus Fiscal Strain",
+    "url": "https://wonkhe.com/blogs/who-would-dare-to-tell-the-truth-about-the-tef"
+  },
+  {
+    "rowIndex": 29,
     "title": "Michael J. States",
     "url": "https://www.theeduledger.com/on-the-move/article/15836884/michael-j-states"
   },
   {
-    "rowIndex": 19,
+    "rowIndex": 42,
     "title": "Higher Education Must Learn from the Music Industry's Digital Collapse as AI Commoditizes Knowledge",
     "url": "https://wonkhe.com/blogs/what-can-the-higher-education-sector-learn-from-the-music-industry-about-ai"
   },
   {
-    "rowIndex": 20,
+    "rowIndex": 43,
     "title": "Beyond the Headline: Why Higher Education Partnerships Require Deep Structural Governance Reform",
     "url": "https://wonkhe.com/blogs/the-conditions-for-good-collaboration-wont-create-themselves"
   },
   {
-    "rowIndex": 21,
+    "rowIndex": 44,
     "title": "From New Hall to Murray Edwards: How One Foundation Broke Cambridge’s Historic Gender Barrier",
     "url": "https://wonkhe.com/blogs/higher-education-postcard-murray-edwards-college"
   },
   {
-    "rowIndex": 28,
+    "rowIndex": 51,
     "title": "UK Universities to Welcome 40 Refugee Scholars by 2027 via New Academic Pathway",
     "url": "https://thepienews.com/refugee-student-route-aims-to-bring-40-students-to-uk-universities-in-2027/"
   },
   {
-    "rowIndex": 29,
+    "rowIndex": 52,
     "title": "How Sunderland University and Bloomsbury Publishing Are Empowering the Next Generation of Creative Writers",
     "url": "https://www.fenews.co.uk/higher-education/the-write-steps-university-of-sunderland-and-bloomsbury-publishing-inspire-future-creatives/"
   },
   {
-    "rowIndex": 30,
+    "rowIndex": 53,
     "title": "Why Student Perfectionism Is Linked to Higher Rates of Anxiety and Depression",
     "url": "https://www.fenews.co.uk/higher-education/perfectionist-students-are-more-likely-to-develop-depression-and-anxiety/"
   },
   {
-    "rowIndex": 31,
+    "rowIndex": 54,
     "title": "London Interdisciplinary School Partners with emlyon Business School for UK Campus Expansion",
     "url": "https://www.fenews.co.uk/higher-education/london-interdisciplinary-school-joins-emlyon-as-the-french-institution-expands-its-presence-in-london/"
   },
   {
-    "rowIndex": 32,
+    "rowIndex": 55,
     "title": "Efekta Scales Rwanda English Language Program to Train Over 90,000 Educators",
     "url": "https://thepienews.com/efekta-expands-rwanda-elt-program-training-over-90k-teachers/"
   },
   {
-    "rowIndex": 33,
+    "rowIndex": 56,
     "title": "Why Undergraduate Certificates Face the Greatest Threat Under New Gainful Employment Rules",
     "url": "https://www.highereddive.com/news/undergraduate-certificates-are-most-at-risk-of-failing-new-earnings-test/833660/"
   },
   {
-    "rowIndex": 34,
+    "rowIndex": 57,
     "title": "Survey Finds Nearly 50% of Businesses Experience Unplanned Autonomous AI Agent Behavior",
     "url": "https://campustechnology.com/articles/2026/10/21/unexpected-ai-agent-activity-reported-by-nearly-half-of-organizations-in-recent-survey.aspx"
   },
   {
-    "rowIndex": 35,
+    "rowIndex": 58,
     "title": "How Hackers Are Weaponizing Everyday Workplace Software",
     "url": "https://campustechnology.com/articles/2026/10/21/cyber-attacks-increasingly-exploit-trusted-workplace-tools.aspx"
   },
   {
-    "rowIndex": 36,
+    "rowIndex": 59,
     "title": "Do Company-Issued Credentials Really Pay Off for Workers?",
     "url": "https://hechingerreport.org/companies-invent-credentials-without-proof-they-pay-off/"
   },
   {
-    "rowIndex": 37,
+    "rowIndex": 60,
     "title": "How Artificial Intelligence Is Changing How Schools Reward Top Students",
     "url": "https://edsurge.com/news/how-ai-is-breaking-the-way-we-reward-high-achieving-students"
   },
   {
-    "rowIndex": 38,
+    "rowIndex": 61,
     "title": "What Lies Ahead for School Tutoring Programs as Relief Funding Ends",
     "url": "https://edsurge.com/news/what-happens-to-high-impact-tutoring-when-the-pandemic-money-is-gone"
   },
   {
-    "rowIndex": 39,
+    "rowIndex": 62,
     "title": "Universities Face Growing Calls to Overhaul Faith Provisions as Religious Student Demographics Rise",
     "url": "https://wonkhe.com/blogs/students-of-faith-need-more-than-a-prayer-room"
   },
   {
-    "rowIndex": 40,
+    "rowIndex": 63,
     "title": "Devolution Demands a New Metric: Why Universities Must Measure Talent Circulation Over Whitehall Compliance",
     "url": "https://wonkhe.com/blogs/understanding-universities-from-the-perspective-of-place"
   },
   {
-    "rowIndex": 41,
+    "rowIndex": 64,
     "title": "Wales Unveils Benchmarked Tertiary Quality Framework in Divergence from English Regulatory Model",
     "url": "https://wonkhe.com/blogs/wales-picks-benchmarks-over-bright-lines-to-judge-tertiary-quality"
   },
   {
-    "rowIndex": 58,
+    "rowIndex": 81,
     "title": "Redefining the Degree: UK Higher Education Pivots Toward a Lifelong Subscription Model",
     "url": "https://wonkhe.com/blogs/universities-should-stop-selling-degrees-and-start-building-lifelong-relationships"
   },
   {
-    "rowIndex": 59,
+    "rowIndex": 82,
     "title": "Universities Face Scrutiny Over Failure to Shield LGBTQ+ Researchers from Escalating Public Backlash",
     "url": "https://wonkhe.com/blogs/universities-cant-leave-lgbtq-researchers-to-manage-the-backlash-alone"
   },
   {
-    "rowIndex": 64,
+    "rowIndex": 87,
     "title": "Cornell Sexual Assault Fallout Sparks Sector-Wide Reckoning Over Administrative Demands on Survivors",
     "url": "https://www.theeduledger.com/campus-climate/article/15837791/if-we-really-care-about-survivors-we-need-to-stop-asking-so-much-of-them"
   },
   {
-    "rowIndex": 77,
+    "rowIndex": 100,
     "title": "University Boards Must Pivot From Five-Year Blueprints to Strategic Capability as Sector Pressures Mount",
     "url": "https://wonkhe.com/blogs/boards-cant-predict-the-future-but-they-can-make-sure-their-institution-is-ready-for-it"
   },
   {
-    "rowIndex": 98,
+    "rowIndex": 121,
     "title": "Rethinking Graduate Outcomes: Policy Experts Urge Shift from Immediate Metrics to Lifelong Employability",
     "url": "https://wonkhe.com/blogs/what-counts-as-a-graduate-outcome-when-the-labour-market-is-changing"
   },
   {
-    "rowIndex": 100,
+    "rowIndex": 123,
     "title": "Preserving Academic Sanctuary: How the Warburg Institute's Historic Rescue Shapes Modern Higher Ed Governance",
     "url": "https://wonkhe.com/blogs/higher-education-postcard-the-warburg-institute"
   },
   {
-    "rowIndex": 101,
+    "rowIndex": 124,
     "title": "UK Universities Face Dual Pressure as Innovation Mandates Clash with Institutional Governance Realities",
     "url": "https://wonkhe.com/blogs/podcast-innovation-nation-emerging-leaders-graduate-recruitment"
   },
   {
-    "rowIndex": 111,
+    "rowIndex": 134,
     "title": "College Alternatives: Best Career Paths and Options Beyond a Degree",
     "url": "https://wonkhe.com/blogs/if-not-university-then-what"
   },
   {
-    "rowIndex": 112,
+    "rowIndex": 135,
     "title": "Everything You Need to Know About Bishane Whitmore",
     "url": "https://www.theeduledger.com/on-the-move/article/15837527/bishane-whitmore"
   },
   {
-    "rowIndex": 113,
+    "rowIndex": 136,
     "title": "Minnesota State Redirects Community College Funding to Support Struggling Universities",
     "url": "https://www.opencampus.org/2026/10/15/tough-medicine-minnesota-state-approves-plan-to-use-community-college-funds-to-help-struggling-universities/"
   },
   {
-    "rowIndex": 114,
+    "rowIndex": 137,
     "title": "Australia Higher Education Reports 5% Decline in International Student Enrollment",
     "url": "https://thepienews.com/overseas-student-commencements-fall-5-in-australian-higher-education/"
   },
   {
-    "rowIndex": 115,
+    "rowIndex": 138,
     "title": "Transforming Study Abroad Opportunities for Nursing Students in Japan",
     "url": "https://thepienews.com/small-steps-bigger-possibilities-rethinking-study-abroad-for-japanese-nursing-students/"
   },
   {
-    "rowIndex": 116,
+    "rowIndex": 139,
     "title": "Global University Graduates Inject $1.7 Trillion into Host Country Economies",
     "url": "https://thepienews.com/international-graduates-deliver-1-7tn-lifetime-boost-to-host-economies/"
   },
   {
-    "rowIndex": 117,
+    "rowIndex": 140,
     "title": "Strategic Tactics University Admissions Teams Are Using for the Coming Year",
     "url": "https://www.highereddive.com/news/how-admissions-officials-are-navigating-the-academic-year-ahead/833007/"
   }
